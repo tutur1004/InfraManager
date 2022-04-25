@@ -1,0 +1,11 @@
+# Debug mode
+debug: false
+# Storage system (Only mysql work for now)
+database:
+  type: mysql
+  mysql:
+    prefix: "host_"
+    hostname: "localhost:3306"
+    database: "minecraft"
+    username: "user"
+    password: "pass"

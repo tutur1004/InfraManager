@@ -1,0 +1,5 @@
+name: HostManager
+author: MileKat
+main: fr.milekat.hostmanager.HostManager
+version: 0.1
+description: "Management plugin of this host system"

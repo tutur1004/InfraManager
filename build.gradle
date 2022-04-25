@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+jar {
+    from('src/main/java') {
+        include "fr/milekat/hostmanager/storage/mysql/host_schema.sql"
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
+    maven { url = "https://hub.spigotmc.org/nexus/content/repositories/snapshots/" }
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+dependencies {
+    compileOnly('org.jetbrains:annotations:23.0.0')
+    compileOnly("org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT")
+    compileOnly group: 'mysql', name: 'mysql-connector-java', version: '8.0.28'
+}
