@@ -1,5 +1,6 @@
 package fr.milekat.hostmanager.storage;
 
+import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
 import fr.milekat.hostmanager.storage.mysql.MySQLAdapter;
 import org.bukkit.configuration.file.FileConfiguration;
 

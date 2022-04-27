@@ -1,4 +1,4 @@
-package fr.milekat.hostmanager.storage;
+package fr.milekat.hostmanager.storage.exeptions;
 
 public class StorageLoaderException extends Throwable {
     public StorageLoaderException(String errorMessage) {

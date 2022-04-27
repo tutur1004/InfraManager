@@ -2,7 +2,8 @@ package fr.milekat.hostmanager.storage.mysql;
 
 import fr.milekat.hostmanager.HostManager;
 import fr.milekat.hostmanager.storage.StorageExecutor;
-import fr.milekat.hostmanager.storage.StorageLoaderException;
+import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
+import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.BufferedReader;
@@ -118,18 +119,22 @@ public class MySQLAdapter implements StorageExecutor {
      * @param uuid player uuid
      * @return amount of reaming ticket
      */
-    public Integer getTicket(UUID uuid) throws SQLException {
-        Connection connection = DB.getConnection();
-        PreparedStatement q = connection.prepareStatement(GET_TICKETS);
-        q.setString(1, uuid.toString());
-        q.execute();
-        if (q.getResultSet().next()) {
-            int tickets = q.getResultSet().getInt("tickets");
-            q.close();
-            return tickets;
-        } else {
-            q.close();
-            return 0;
+    public Integer getTicket(UUID uuid) throws StorageExecuteException {
+        try {
+            Connection connection = DB.getConnection();
+            PreparedStatement q = connection.prepareStatement(GET_TICKETS);
+            q.setString(1, uuid.toString());
+            q.execute();
+            if (q.getResultSet().next()) {
+                int tickets = q.getResultSet().getInt("tickets");
+                q.close();
+                return tickets;
+            } else {
+                q.close();
+                return 0;
+            }
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
 
@@ -139,13 +144,17 @@ public class MySQLAdapter implements StorageExecutor {
      * @param username player minecraft username
      * @param amount amount of tickets to add to this player
      */
-    public void addPlayerTickets(UUID uuid, String username, Integer amount) throws SQLException {
-        Connection connection = DB.getConnection();
-        PreparedStatement q = connection.prepareStatement(ADD_TICKETS);
-        q.setString(1, uuid.toString());
-        q.setString(2, username);
-        q.setInt(3, amount);
-        q.setInt(4, amount);
-        q.execute();
+    public void addPlayerTickets(UUID uuid, String username, Integer amount) throws StorageExecuteException {
+        try {
+            Connection connection = DB.getConnection();
+            PreparedStatement q = connection.prepareStatement(ADD_TICKETS);
+            q.setString(1, uuid.toString());
+            q.setString(2, username);
+            q.setInt(3, amount);
+            q.setInt(4, amount);
+            q.execute();
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
     }
 }

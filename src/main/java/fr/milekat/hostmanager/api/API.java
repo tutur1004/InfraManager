@@ -2,9 +2,9 @@ package fr.milekat.hostmanager.api;
 
 import fr.milekat.hostmanager.HostManager;
 import fr.milekat.hostmanager.storage.StorageExecutor;
+import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import org.bukkit.entity.Player;
 
-import java.sql.SQLException;
 import java.util.UUID;
 
 public class API {
@@ -15,7 +15,7 @@ public class API {
      * @param uuid uuid of player
      * @return ticket amount
      */
-    public static Integer getTickets(UUID uuid) throws SQLException {
+    public static Integer getTickets(UUID uuid) throws StorageExecuteException {
         return EXECUTOR.getTicket(uuid);
     }
 
@@ -24,7 +24,7 @@ public class API {
      * @param player player
      * @return ticket amount
      */
-    public static Integer getTickets(Player player) throws SQLException {
+    public static Integer getTickets(Player player) throws StorageExecuteException {
         return getTickets(player.getUniqueId());
     }
 
@@ -32,7 +32,7 @@ public class API {
      * Get tickets amount of player
      * @param player player
      */
-    public static void addPlayerTickets(Player player, Integer amount) throws SQLException {
+    public static void addPlayerTickets(Player player, Integer amount) throws StorageExecuteException {
         EXECUTOR.addPlayerTickets(player.getUniqueId(), player.getName(), amount);
     }
 }

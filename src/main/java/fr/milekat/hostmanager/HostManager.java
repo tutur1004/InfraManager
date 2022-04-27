@@ -1,8 +1,8 @@
 package fr.milekat.hostmanager;
 
 import fr.milekat.hostmanager.storage.StorageExecutor;
-import fr.milekat.hostmanager.storage.StorageLoaderException;
 import fr.milekat.hostmanager.storage.StorageManager;
+import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
