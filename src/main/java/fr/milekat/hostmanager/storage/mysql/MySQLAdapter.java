@@ -12,13 +12,25 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class MySQLAdapter implements StorageExecutor {
     private final String SCHEMA_FILE = "host_schema.sql";
     private final FileConfiguration CONFIG;
     private final MySQLDriver DB;
+    private final List<String> TABLES = Arrays.asList("host_games", "host_instances", "host_logs", "host_users");
+
+    /*
+        SQL Queries
+     */
+    private final String CHECK_TABLE = "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_NAME = ?;";
+    private final String GET_TICKETS = "SELECT tickets FROM host_users WHERE uuid = '?';";
+    private final String ADD_TICKETS = "INSERT INTO host_users (uuid, last_name, tickets) VALUES (?,?,?) ON DUPLICATE KEY UPDATE tickets = tickets + ?;";
+
 
     public MySQLAdapter(FileConfiguration config) throws StorageLoaderException {
         this.CONFIG = config;
@@ -39,6 +51,13 @@ public class MySQLAdapter implements StorageExecutor {
     }
 
     /**
+     * Disconnect from MySQL server
+     */
+    public void disconnect() {
+        DB.disconnect();
+    }
+
+    /**
      * Apply SQL Default schema with host_schema.sql dump
      */
     private void applySchema() throws SQLException, IOException, StorageLoaderException {
@@ -54,7 +73,7 @@ public class MySQLAdapter implements StorageExecutor {
             PreparedStatement q = connection.prepareStatement(bufferedReader.lines()
                     .filter(line -> !line.startsWith("--"))
                     .collect(Collectors.joining()
-                    ).replaceAll("\\{prefix\\}", CONFIG.getString("database.mysql.prefix")));
+                    ).replaceAll("\\{prefix}", CONFIG.getString("database.mysql.prefix")));
             try {
                 q.execute();
             } catch (Exception throwable) {
@@ -62,17 +81,71 @@ public class MySQLAdapter implements StorageExecutor {
                     throwable.printStackTrace();
                 }
             }
-            connection.close();
         }
     }
 
     /**
-     * Query tickets for this uuid
+     * Check if all tables are created
+     * @return true if all tables are created
+     */
+    public boolean checkStorages() {
+        try {
+            Connection connection = DB.getConnection();
+            for (String table : TABLES) {
+                PreparedStatement q = connection.prepareStatement(CHECK_TABLE);
+                q.setString(1, table);
+                q.execute();
+                if (!q.getResultSet().next()) {
+                    if (HostManager.DEBUG) {
+                        HostManager.getHostLogger().warning("Table: " + table + " is not loaded properly");
+                    }
+                    q.close();
+                    return false;
+                }
+                q.close();
+            }
+            return true;
+        } catch (SQLException throwable) {
+            if (HostManager.DEBUG) {
+                throwable.printStackTrace();
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Query tickets for this player
      * @param uuid player uuid
      * @return amount of reaming ticket
      */
-    public Integer getTicket(UUID uuid) {
-        // TODO: 25/04/2022 MySQL - Query tickets for this uuid
-        return 0;
+    public Integer getTicket(UUID uuid) throws SQLException {
+        Connection connection = DB.getConnection();
+        PreparedStatement q = connection.prepareStatement(GET_TICKETS);
+        q.setString(1, uuid.toString());
+        q.execute();
+        if (q.getResultSet().next()) {
+            int tickets = q.getResultSet().getInt("tickets");
+            q.close();
+            return tickets;
+        } else {
+            q.close();
+            return 0;
+        }
+    }
+
+    /**
+     * Add tickets to this player
+     * @param uuid player uuid
+     * @param username player minecraft username
+     * @param amount amount of tickets to add to this player
+     */
+    public void addPlayerTickets(UUID uuid, String username, Integer amount) throws SQLException {
+        Connection connection = DB.getConnection();
+        PreparedStatement q = connection.prepareStatement(ADD_TICKETS);
+        q.setString(1, uuid.toString());
+        q.setString(2, username);
+        q.setInt(3, amount);
+        q.setInt(4, amount);
+        q.execute();
     }
 }

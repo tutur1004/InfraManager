@@ -12,6 +12,9 @@ public class StorageManager {
         } else {
             throw new StorageLoaderException("Unsupported database type");
         }
+        if (!executor.checkStorages()) {
+            throw new StorageLoaderException("Storages are not loaded properly");
+        }
     }
 
     public StorageExecutor getExecutor() {

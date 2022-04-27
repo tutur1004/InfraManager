@@ -3,7 +3,6 @@ package fr.milekat.hostmanager;
 import fr.milekat.hostmanager.storage.StorageExecutor;
 import fr.milekat.hostmanager.storage.StorageLoaderException;
 import fr.milekat.hostmanager.storage.StorageManager;
-import org.bukkit.plugin.PluginLogger;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -26,10 +25,10 @@ public class HostManager extends JavaPlugin {
         try {
             LOADED_STORAGE = new StorageManager(this.getConfig());
             if (DEBUG) {
-                getHostLogger().info("Storage enabled, API is now available");
+                getHostLogger().info("Storage enable, API is now available");
             }
         } catch (StorageLoaderException throwable) {
-            getHostLogger().warning("Storage load failed, disable plugin");
+            getHostLogger().warning("Storage load failed, disabling plugin..");
             getServer().getPluginManager().disablePlugin(this);
             if (DEBUG) {
                 throwable.printStackTrace();
@@ -37,6 +36,13 @@ public class HostManager extends JavaPlugin {
                 getHostLogger().warning("Error: " + throwable.getLocalizedMessage());
             }
         }
+    }
+
+    @Override
+    public void onDisable() {
+        try {
+            LOADED_STORAGE.getExecutor().disconnect();
+        } catch (Exception ignored) {}
     }
 
     /**
