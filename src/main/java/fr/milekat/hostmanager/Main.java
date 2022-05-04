@@ -3,12 +3,13 @@ package fr.milekat.hostmanager;
 import fr.milekat.hostmanager.storage.StorageExecutor;
 import fr.milekat.hostmanager.storage.StorageManager;
 import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.logging.Logger;
 
-public class HostManager extends JavaPlugin {
+public class Main extends JavaPlugin {
     private static JavaPlugin plugin;
     public static Boolean DEBUG = false;
     private static StorageManager LOADED_STORAGE;
@@ -59,5 +60,13 @@ public class HostManager extends JavaPlugin {
      */
     public static StorageExecutor getExecutor() {
         return LOADED_STORAGE.getExecutor();
+    }
+
+    /**
+     * Get config file
+     * @return Config file
+     */
+    public static FileConfiguration getFileConfig() {
+        return plugin.getConfig();
     }
 }

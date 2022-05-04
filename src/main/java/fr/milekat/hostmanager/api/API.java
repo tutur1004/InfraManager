@@ -1,6 +1,6 @@
 package fr.milekat.hostmanager.api;
 
-import fr.milekat.hostmanager.HostManager;
+import fr.milekat.hostmanager.Main;
 import fr.milekat.hostmanager.storage.StorageExecutor;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import org.bukkit.entity.Player;
@@ -8,7 +8,7 @@ import org.bukkit.entity.Player;
 import java.util.UUID;
 
 public class API {
-    private static final StorageExecutor EXECUTOR = HostManager.getExecutor();
+    private static final StorageExecutor EXECUTOR = Main.getExecutor();
 
     /**
      * Get tickets amount of player
@@ -29,7 +29,7 @@ public class API {
     }
 
     /**
-     * Get tickets amount of player
+     * Add tickets to player
      * @param player player
      */
     public static void addPlayerTickets(Player player, Integer amount) throws StorageExecuteException {

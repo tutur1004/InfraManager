@@ -1,6 +1,6 @@
 package fr.milekat.hostmanager.storage.mysql;
 
-import fr.milekat.hostmanager.HostManager;
+import fr.milekat.hostmanager.Main;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -31,10 +31,10 @@ public class MySQLDriver {
             connection = DriverManager.getConnection(url + host + "/" + database + "?autoReconnect=true&allowMultiQueries=true&rewriteBatchedStatements=true&characterEncoding=UTF-8", user, pass);
         } catch (SQLException throwable) {
             throwable.printStackTrace();
-            if (HostManager.DEBUG) HostManager.getHostLogger().warning("SQL Error.");
+            if (Main.DEBUG) Main.getHostLogger().warning("SQL Error.");
         } catch (ClassNotFoundException throwable) {
             throwable.printStackTrace();
-            if (HostManager.DEBUG) HostManager.getHostLogger().warning("Missing SQL Class.");
+            if (Main.DEBUG) Main.getHostLogger().warning("Missing SQL Class.");
         }
     }
 
@@ -46,7 +46,7 @@ public class MySQLDriver {
             connection.close();
         } catch (SQLException throwable) {
             throwable.printStackTrace();
-            if (HostManager.DEBUG) HostManager.getHostLogger().warning("SQL Error.");
+            if (Main.DEBUG) Main.getHostLogger().warning("SQL Error.");
         }
     }
 
