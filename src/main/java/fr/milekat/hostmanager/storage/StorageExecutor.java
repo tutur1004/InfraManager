@@ -1,9 +1,12 @@
 package fr.milekat.hostmanager.storage;
 
-import fr.milekat.hostmanager.hosts.classes.Game;
+import fr.milekat.hostmanager.api.classes.Game;
+import fr.milekat.hostmanager.api.classes.Instance;
+import fr.milekat.hostmanager.api.classes.Log;
+import fr.milekat.hostmanager.api.classes.User;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,6 +52,7 @@ public interface StorageExecutor {
     /*
         Games
      */
+
     /**
      * Get all games
      * @return list of games
@@ -68,5 +72,38 @@ public interface StorageExecutor {
     /*
         Instances
      */
+
+    /**
+     * Query active instances
+     * @return list of instances
+     */
+    List<Instance> getActiveInstances() throws StorageExecuteException;
     // TODO: 01/05/2022 Instances queries
+
+    /*
+        Users
+     */
+
+    /**
+     * Query all users ! WARNING THIS CAN BE A HUGE STORAGE QUERY
+     * @return all users
+     */
+    List<User> getUsers() throws StorageExecuteException;
+
+    /*
+        Logs
+     */
+
+    /**
+     * Retrieve last n logs
+     * @param count number of the latest logs to retrieve
+     */
+    List<Log> getLogs(int count) throws StorageExecuteException;
+
+    /**
+     * Retrieve all logs between 2 days ! WARNING THIS CAN BE A HUGE STORAGE QUERY
+     * @param from first date from the period
+     * @param to end of the period
+     */
+    List<Log> getLogs(Date from, Date to) throws StorageExecuteException;
 }

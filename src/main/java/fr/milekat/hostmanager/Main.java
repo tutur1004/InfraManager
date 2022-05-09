@@ -3,34 +3,43 @@ package fr.milekat.hostmanager;
 import fr.milekat.hostmanager.storage.StorageExecutor;
 import fr.milekat.hostmanager.storage.StorageManager;
 import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
+import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.config.Configuration;
+import net.md_5.bungee.config.ConfigurationProvider;
+import net.md_5.bungee.config.YamlConfiguration;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 
-public class Main extends JavaPlugin {
-    private static JavaPlugin plugin;
+public class Main extends Plugin {
+    public static String HOST_UUID_ENV_VAR_NAME = "HOST_UUID";
+
+    private static Plugin plugin;
+    private static Configuration configFile;
     public static Boolean DEBUG = false;
     private static StorageManager LOADED_STORAGE;
 
     @Override
     public void onEnable() {
         plugin = this;
-        File configFile = new File(this.getDataFolder(), "config.yml");
-        if (!(configFile.exists())) {
-            this.saveResource("config.yml", false);
+        try {
+            configFile = ConfigurationProvider.getProvider(YamlConfiguration.class).load(
+                    new File(this.getDataFolder(),"config.yml")
+            );
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        DEBUG = getConfig().getBoolean("debug");
+        DEBUG = configFile.getBoolean("debug");
         if (DEBUG) getHostLogger().info("Debug enable");
         try {
-            LOADED_STORAGE = new StorageManager(this.getConfig());
+            LOADED_STORAGE = new StorageManager(configFile);
             if (DEBUG) {
                 getHostLogger().info("Storage enable, API is now available");
             }
         } catch (StorageLoaderException throwable) {
             getHostLogger().warning("Storage load failed, disabling plugin..");
-            getServer().getPluginManager().disablePlugin(this);
+            this.onDisable();
             if (DEBUG) {
                 throwable.printStackTrace();
             } else {
@@ -66,7 +75,7 @@ public class Main extends JavaPlugin {
      * Get config file
      * @return Config file
      */
-    public static FileConfiguration getFileConfig() {
-        return plugin.getConfig();
+    public static Configuration getFileConfig() {
+        return configFile;
     }
 }

@@ -1,47 +1,56 @@
-package fr.milekat.hostmanager.hosts.classes;
+package fr.milekat.hostmanager.api.classes;
+
+import net.md_5.bungee.api.ProxyServer;
 
 import java.util.Date;
 
 public class Game {
-    private final int id;
     private final String name;
-    private final Date create_date;
+    private final Date create;
     private final boolean enable;
+    private final String gameVersion;
+    private final String serverVersion;
     private final String image;
     private final int requirements;
 
     public Game(String name, boolean enable, String image, int requirements) {
-        this.id = 0;
         this.name = name;
-        this.create_date = new Date();
+        this.create = new Date();
         this.enable = enable;
+        this.gameVersion = null;
+        this.serverVersion = ProxyServer.getInstance().getVersion();
         this.image = image;
         this.requirements = requirements;
     }
 
-    public Game(int id, String name, Date create_date, boolean enable, String image, int requirements) {
-        this.id = id;
+    public Game(String name, Date create, boolean enable, String gameVersion, String serverVersion, String image, int requirements) {
         this.name = name;
-        this.create_date = create_date;
+        this.create = create;
         this.enable = enable;
+        this.gameVersion = gameVersion;
+        this.serverVersion = serverVersion;
         this.image = image;
         this.requirements = requirements;
-    }
-
-    public int getId() {
-        return id;
     }
 
     public String getName() {
         return name;
     }
 
-    public Date getCreate_date() {
-        return create_date;
+    public Date getCreate() {
+        return create;
     }
 
     public boolean isEnable() {
         return enable;
+    }
+
+    public String getGameVersion() {
+        return gameVersion;
+    }
+
+    public String getServerVersion() {
+        return serverVersion;
     }
 
     public String getImage() {

@@ -1,26 +1,25 @@
 package fr.milekat.hostmanager.storage.mysql;
 
 import fr.milekat.hostmanager.Main;
-import fr.milekat.hostmanager.hosts.classes.Game;
+import fr.milekat.hostmanager.api.classes.*;
 import fr.milekat.hostmanager.storage.StorageExecutor;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
-import org.bukkit.configuration.file.FileConfiguration;
+import net.md_5.bungee.config.Configuration;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class MySQLAdapter implements StorageExecutor {
     private final String SCHEMA_FILE = "host_schema.sql";
-    private final FileConfiguration CONFIG;
+    private final Configuration CONFIG;
     private final MySQLDriver DB;
     private final String PREFIX = Main.getFileConfig().getString("database.mysql.prefix");
     private final List<String> TABLES = Arrays.asList(PREFIX + "games", PREFIX + "instances", PREFIX + "logs", PREFIX + "users");
@@ -28,14 +27,29 @@ public class MySQLAdapter implements StorageExecutor {
     /*
         SQL Queries
      */
-    private final String CHECK_TABLE = "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_NAME = ?;";
+    private final String CHECK_TABLE = "SELECT TABLE_NAME FROM information_schema.TABLES " +
+            "WHERE TABLE_NAME = ?;";
 
-    private final String GET_TICKETS = "SELECT tickets FROM {prefix}users WHERE uuid = '?';";
-    private final String GET_GAMES = "SELECT * FROM {prefix}users WHERE uuid = '?';";
+    private final String GET_TICKETS = "SELECT tickets FROM {prefix}users " +
+            "WHERE uuid = '?';";
+    private final String GET_GAMES = "SELECT * FROM {prefix}games;";
+    private final String GET_USERS = "SELECT * FROM {prefix}users;";
+    private final String GET_ACTIVE_INSTANCES = "SELECT * FROM {prefix}instances i " +
+            "INNER JOIN {prefix}games g ON i.game=g.game_id " +
+            "WHERE i.state <>4;";
+    private final String GET_N_LOGS = "SELECT * FROM {prefix}logs ORDER BY log_id DESC LIMIT ?;";
+    private final String GET_LOGS_WITHIN_DATE = "SELECT * FROM {prefix}logs l " +
+            "INNER JOIN {prefix}instances i ON l.instance = i.instance_id " +
+            "INNER JOIN {prefix}users u on l.user = u.user_id " +
+            "INNER JOIN {prefix}games g on l.game = g.game_id " +
+            "WHERE (l.log_date BETWEEN ? AND ?);";
 
-    private final String ADD_TICKETS = "INSERT INTO {prefix}users (uuid, last_name, tickets) VALUES (?,?,?) ON DUPLICATE KEY UPDATE tickets = tickets + ?;";
-    private final String REMOVE_TICKETS = "INSERT INTO {prefix}users (uuid, last_name, tickets) VALUES (?,?,?) ON DUPLICATE KEY UPDATE tickets = tickets - ?;";
-    private final String CREATE_GAME = "INSERT INTO {prefix}games (name, enable, image, requirements) VALUES (?,?,?,?);";
+    private final String ADD_TICKETS = "INSERT INTO {prefix}users (uuid, last_name, tickets) " +
+            "VALUES (?,?,?) ON DUPLICATE KEY UPDATE tickets = tickets + ?;";
+    private final String REMOVE_TICKETS = "INSERT INTO {prefix}users (uuid, last_name, tickets) " +
+            "VALUES (?,?,?) ON DUPLICATE KEY UPDATE tickets = tickets - ?;";
+    private final String CREATE_GAME = "INSERT INTO {prefix}games (name, enable, image, requirements) " +
+            "VALUES (?,?,?,?);";
 
     private final String UPDATE_GAME = "UPDATE {prefix}games SET name=?, enable=?, image=?, requirements=?";
 
@@ -46,7 +60,7 @@ public class MySQLAdapter implements StorageExecutor {
         return query.replaceAll("\\{prefix}", PREFIX);
     }
 
-    public MySQLAdapter(FileConfiguration config) throws StorageLoaderException {
+    public MySQLAdapter(Configuration config) throws StorageLoaderException {
         this.CONFIG = config;
         try {
             DB = new MySQLDriver("jdbc:mysql://",
@@ -191,6 +205,26 @@ public class MySQLAdapter implements StorageExecutor {
     }
 
     /**
+     * Query active instances
+     * @return list of instances
+     */
+    @Override
+    public List<Instance> getActiveInstances() throws StorageExecuteException {
+        try {
+            Connection connection = DB.getConnection();
+            PreparedStatement q = connection.prepareStatement(formatQuery(GET_ACTIVE_INSTANCES));
+            q.execute();
+            List<Instance> instances = new ArrayList<>();
+            while (q.getResultSet().next()) {
+                instances.add(resultSetToInstance(q.getResultSet()));
+            }
+            return instances;
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    /**
      * Query all games
      * @return list of games
      */
@@ -202,13 +236,7 @@ public class MySQLAdapter implements StorageExecutor {
             q.execute();
             List<Game> games = new ArrayList<>();
             while (q.getResultSet().next()) {
-                games.add(new Game(q.getResultSet().getInt("id"),
-                        q.getResultSet().getString("name"),
-                        new Date(q.getResultSet().getTimestamp("create_date").getTime()),
-                        q.getResultSet().getBoolean("enable"),
-                        q.getResultSet().getString("image"),
-                        q.getResultSet().getInt("requirements"))
-                );
+                games.add(resultSetToGame(q.getResultSet()));
             }
             return games;
         } catch (SQLException throwable) {
@@ -244,5 +272,126 @@ public class MySQLAdapter implements StorageExecutor {
         } catch (SQLException throwable) {
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
+    }
+
+    /*
+        Users
+     */
+    /**
+     * Query all users ! WARNING THIS CAN BE A HUGE STORAGE QUERY
+     * @return all users
+     */
+    @Override
+    public List<User> getUsers() throws StorageExecuteException {
+        try {
+            Connection connection = DB.getConnection();
+            PreparedStatement q = connection.prepareStatement(formatQuery(GET_USERS));
+            q.execute();
+            List<User> games = new ArrayList<>();
+            while (q.getResultSet().next()) {
+                games.add(resultSetToUser(q.getResultSet()));
+            }
+            return games;
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    /*
+        Logs
+     */
+    /**
+     * Retrieve last n logs
+     * @param count number of the latest logs to retrieve
+     */
+    @Override
+    public List<Log> getLogs(int count) throws StorageExecuteException {
+        try {
+            Connection connection = DB.getConnection();
+            PreparedStatement q = connection.prepareStatement(formatQuery(GET_N_LOGS));
+            q.setInt(1, count);
+            q.execute();
+            List<Log> logs = new ArrayList<>();
+            while (q.getResultSet().next()) {
+                logs.add(resultSetToLog(q.getResultSet()));
+            }
+            return logs;
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    /**
+     * Retrieve all logs between 2 days ! WARNING THIS CAN BE A HUGE STORAGE QUERY
+     * @param from first date from the period
+     * @param to end of the period
+     */
+    @Override
+    public List<Log> getLogs(Date from, Date to) throws StorageExecuteException {
+        try {
+            Connection connection = DB.getConnection();
+            PreparedStatement q = connection.prepareStatement(formatQuery(GET_LOGS_WITHIN_DATE));
+            q.setTimestamp(1, new Timestamp(from.getTime()));
+            q.setTimestamp(2, new Timestamp(to.getTime()));
+            q.execute();
+            List<Log> logs = new ArrayList<>();
+            while (q.getResultSet().next()) {
+                logs.add(resultSetToLog(q.getResultSet()));
+            }
+            return logs;
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    /*
+        Class shortcuts
+     */
+    /**
+     * Shortcut to convert MySQL instance row into instance class
+     */
+    private Instance resultSetToInstance(ResultSet r) throws SQLException {
+        return new Instance(r.getString("name"),
+                r.getString("name"),
+                r.getInt("port"),
+                InstanceState.fromInteger(r.getInt("state")),
+                resultSetToGame(r),
+                resultSetToUser(r),
+                new Date(r.getTimestamp("creation").getTime()),
+                new Date(r.getTimestamp("deletion").getTime())
+        );
+    }
+
+    /**
+     * Shortcut to convert MySQL game row into game class
+     */
+    private Game resultSetToGame(ResultSet r) throws SQLException {
+        return new Game(r.getString("name"),
+                new Date(r.getTimestamp("create_date").getTime()),
+                r.getBoolean("enable"),
+                r.getString("game_version"),
+                r.getString("server_version"),
+                r.getString("image"),
+                r.getInt("requirements"));
+    }
+
+    /**
+     * Shortcut to convert MySQL log row into log class
+     */
+    private Log resultSetToLog(ResultSet r) throws SQLException {
+        return new Log(new Date(r.getTimestamp("log_date").getTime()),
+                resultSetToInstance(r),
+                LogAction.fromInteger(r.getInt("action")),
+                resultSetToUser(r),
+                resultSetToGame(r));
+    }
+
+    /**
+     * Shortcut to convert MySQL user row into user class
+     */
+    private User resultSetToUser(ResultSet r) throws SQLException {
+        return new User(UUID.fromString(r.getString("uuid")),
+                r.getString("last_name"),
+                r.getInt("tickets"));
     }
 }

@@ -3,7 +3,7 @@ package fr.milekat.hostmanager.api;
 import fr.milekat.hostmanager.Main;
 import fr.milekat.hostmanager.storage.StorageExecutor;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
-import org.bukkit.entity.Player;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 import java.util.UUID;
 
@@ -24,7 +24,7 @@ public class API {
      * @param player player
      * @return ticket amount
      */
-    public static Integer getTickets(Player player) throws StorageExecuteException {
+    public static Integer getTickets(ProxiedPlayer player) throws StorageExecuteException {
         return getTickets(player.getUniqueId());
     }
 
@@ -32,7 +32,7 @@ public class API {
      * Add tickets to player
      * @param player player
      */
-    public static void addPlayerTickets(Player player, Integer amount) throws StorageExecuteException {
+    public static void addPlayerTickets(ProxiedPlayer player, Integer amount) throws StorageExecuteException {
         EXECUTOR.addPlayerTickets(player.getUniqueId(), player.getName(), amount);
     }
 }

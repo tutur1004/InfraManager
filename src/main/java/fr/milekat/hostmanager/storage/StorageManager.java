@@ -2,12 +2,12 @@ package fr.milekat.hostmanager.storage;
 
 import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
 import fr.milekat.hostmanager.storage.mysql.MySQLAdapter;
-import org.bukkit.configuration.file.FileConfiguration;
+import net.md_5.bungee.config.Configuration;
 
 public class StorageManager {
     private final StorageExecutor executor;
 
-    public StorageManager(FileConfiguration config) throws StorageLoaderException {
+    public StorageManager(Configuration config) throws StorageLoaderException {
         if (config.getString("database.type").equalsIgnoreCase("mysql")) {
             executor = new MySQLAdapter(config);
         } else {
