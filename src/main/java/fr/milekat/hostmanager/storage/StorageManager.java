@@ -8,7 +8,8 @@ public class StorageManager {
     private final StorageExecutor executor;
 
     public StorageManager(Configuration config) throws StorageLoaderException {
-        if (config.getString("database.type").equalsIgnoreCase("mysql")) {
+        if (config.getString("database.type").equalsIgnoreCase("mysql") ||
+                config.getString("database.type").equalsIgnoreCase("mariadb")) {
             executor = new MySQLAdapter(config);
         } else {
             throw new StorageLoaderException("Unsupported database type");

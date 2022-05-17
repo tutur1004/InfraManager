@@ -1,9 +1,11 @@
 package fr.milekat.hostmanager.api;
 
 import fr.milekat.hostmanager.Main;
+import fr.milekat.hostmanager.api.classes.User;
 import fr.milekat.hostmanager.storage.StorageExecutor;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -34,5 +36,15 @@ public class API {
      */
     public static void addPlayerTickets(ProxiedPlayer player, Integer amount) throws StorageExecuteException {
         EXECUTOR.addPlayerTickets(player.getUniqueId(), player.getName(), amount);
+    }
+
+    /**
+     * Get a user if present, otherwise return null
+     * @param uuid of player
+     * @return User or null
+     */
+    @Nullable
+    public static User getUser(UUID uuid) throws StorageExecuteException {
+        return EXECUTOR.getUser(uuid);
     }
 }

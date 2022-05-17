@@ -5,6 +5,7 @@ import fr.milekat.hostmanager.api.classes.Instance;
 import fr.milekat.hostmanager.api.classes.Log;
 import fr.milekat.hostmanager.api.classes.User;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
 import java.util.List;
@@ -89,6 +90,14 @@ public interface StorageExecutor {
      * @return all users
      */
     List<User> getUsers() throws StorageExecuteException;
+
+    /**
+     * Query a user if present, otherwise return null
+     * @param uuid of player
+     * @return User or null
+     */
+    @Nullable
+    User getUser(UUID uuid) throws StorageExecuteException;
 
     /*
         Logs

@@ -6,6 +6,7 @@ import fr.milekat.hostmanager.storage.StorageExecutor;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
 import net.md_5.bungee.config.Configuration;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -295,6 +296,16 @@ public class MySQLAdapter implements StorageExecutor {
         } catch (SQLException throwable) {
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
+    }
+
+    /**
+     * Query a user if present, otherwise return null
+     * @param uuid of player
+     * @return User or null
+     */
+    @Override
+    public @Nullable User getUser(UUID uuid) throws StorageExecuteException {
+        return null;
     }
 
     /*
