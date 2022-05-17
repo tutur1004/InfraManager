@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class MySQLAdapter implements StorageExecutor {
     private final String SCHEMA_FILE = "host_schema.sql";
     private final Configuration CONFIG;
-    private final MySQLDriver DB;
+    private final MySQLPool DB;
     private final String PREFIX = Main.getFileConfig().getString("database.mysql.prefix");
     private final List<String> TABLES = Arrays.asList(PREFIX + "games", PREFIX + "instances", PREFIX + "logs", PREFIX + "users");
 
@@ -64,12 +64,7 @@ public class MySQLAdapter implements StorageExecutor {
     public MySQLAdapter(Configuration config) throws StorageLoaderException {
         this.CONFIG = config;
         try {
-            DB = new MySQLDriver("jdbc:mysql://",
-                    config.getString("database.mysql.hostname"),
-                    config.getString("database.mysql.database"),
-                    config.getString("database.mysql.username"),
-                    config.getString("database.mysql.password"));
-            DB.connection();
+            DB = new MySQLPool(config);
             applySchema();
         } catch (SQLException | IOException throwable) {
             if (Main.DEBUG) {
@@ -80,7 +75,7 @@ public class MySQLAdapter implements StorageExecutor {
     }
 
     /**
-     * Disconnect from MySQL server
+     * Disconnect from HikariCP pool
      */
     @Override
     public void disconnect() {
@@ -99,12 +94,11 @@ public class MySQLAdapter implements StorageExecutor {
             InputStreamReader streamFile = new InputStreamReader(schemaFileIS);
             BufferedReader bufferedReader = new BufferedReader(streamFile);
             //  Apply Schema
-            Connection connection = DB.getConnection();
-            PreparedStatement q = connection.prepareStatement(bufferedReader.lines()
-                    .filter(line -> !line.startsWith("--"))
-                    .collect(Collectors.joining()
-                    ).replaceAll("\\{prefix}", CONFIG.getString("database.mysql.prefix")));
-            try {
+            try (Connection connection = DB.getConnection();
+                 PreparedStatement q = connection.prepareStatement(bufferedReader.lines()
+                         .filter(line -> !line.startsWith("--"))
+                         .collect(Collectors.joining())
+                         .replaceAll("\\{prefix}", CONFIG.getString("database.mysql.prefix")))) {
                 q.execute();
             } catch (Exception throwable) {
                 if (!throwable.getMessage().contains("already exists") && Main.DEBUG) {
@@ -120,20 +114,18 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Override
     public boolean checkStorages() {
-        try {
-            Connection connection = DB.getConnection();
+        try (Connection connection = DB.getConnection()) {
             for (String table : TABLES) {
-                PreparedStatement q = connection.prepareStatement(formatQuery(CHECK_TABLE));
-                q.setString(1, table);
-                q.execute();
-                if (!q.getResultSet().next()) {
-                    if (Main.DEBUG) {
-                        Main.getHostLogger().warning("Table: " + table + " is not loaded properly");
+                try (PreparedStatement q = connection.prepareStatement(formatQuery(CHECK_TABLE))) {
+                    q.setString(1, table);
+                    q.execute();
+                    if (!q.getResultSet().next()) {
+                        if (Main.DEBUG) {
+                            Main.getHostLogger().warning("Table: " + table + " is not loaded properly");
+                        }
+                        return false;
                     }
-                    q.close();
-                    return false;
                 }
-                q.close();
             }
             return true;
         } catch (SQLException throwable) {
@@ -151,19 +143,14 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Override
     public Integer getTicket(UUID uuid) throws StorageExecuteException {
-        try {
-            Connection connection = DB.getConnection();
-            PreparedStatement q = connection.prepareStatement(formatQuery(GET_TICKETS));
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_TICKETS))) {
             q.setString(1, uuid.toString());
             q.execute();
             if (q.getResultSet().next()) {
-                int tickets = q.getResultSet().getInt("tickets");
-                q.close();
-                return tickets;
-            } else {
-                q.close();
-                return 0;
+                return q.getResultSet().getInt("tickets");
             }
+            return 0;
         } catch (SQLException throwable) {
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
@@ -192,9 +179,8 @@ public class MySQLAdapter implements StorageExecutor {
     }
 
     private void updatePlayerTickets(UUID uuid, String username, Integer amount, String query) throws StorageExecuteException {
-        try {
-            Connection connection = DB.getConnection();
-            PreparedStatement q = connection.prepareStatement(formatQuery(query));
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(query))) {
             q.setString(1, uuid.toString());
             q.setString(2, username);
             q.setInt(3, amount);
@@ -211,9 +197,8 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Override
     public List<Instance> getActiveInstances() throws StorageExecuteException {
-        try {
-            Connection connection = DB.getConnection();
-            PreparedStatement q = connection.prepareStatement(formatQuery(GET_ACTIVE_INSTANCES));
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_ACTIVE_INSTANCES))) {
             q.execute();
             List<Instance> instances = new ArrayList<>();
             while (q.getResultSet().next()) {
@@ -231,9 +216,8 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Override
     public List<Game> getGames() throws StorageExecuteException {
-        try {
-            Connection connection = DB.getConnection();
-            PreparedStatement q = connection.prepareStatement(formatQuery(GET_GAMES));
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_GAMES))) {
             q.execute();
             List<Game> games = new ArrayList<>();
             while (q.getResultSet().next()) {
@@ -262,9 +246,8 @@ public class MySQLAdapter implements StorageExecutor {
     }
 
     private void gameQuery(Game game, String query) throws StorageExecuteException {
-        try {
-            Connection connection = DB.getConnection();
-            PreparedStatement q = connection.prepareStatement(formatQuery(query));
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(query))) {
             q.setString(1, game.getName());
             q.setBoolean(2, game.isEnable());
             q.setString(3, game.getImage());
@@ -284,9 +267,8 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Override
     public List<User> getUsers() throws StorageExecuteException {
-        try {
-            Connection connection = DB.getConnection();
-            PreparedStatement q = connection.prepareStatement(formatQuery(GET_USERS));
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_USERS))) {
             q.execute();
             List<User> games = new ArrayList<>();
             while (q.getResultSet().next()) {
@@ -317,9 +299,8 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Override
     public List<Log> getLogs(int count) throws StorageExecuteException {
-        try {
-            Connection connection = DB.getConnection();
-            PreparedStatement q = connection.prepareStatement(formatQuery(GET_N_LOGS));
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_N_LOGS))) {
             q.setInt(1, count);
             q.execute();
             List<Log> logs = new ArrayList<>();
@@ -339,9 +320,8 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Override
     public List<Log> getLogs(Date from, Date to) throws StorageExecuteException {
-        try {
-            Connection connection = DB.getConnection();
-            PreparedStatement q = connection.prepareStatement(formatQuery(GET_LOGS_WITHIN_DATE));
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_LOGS_WITHIN_DATE))) {
             q.setTimestamp(1, new Timestamp(from.getTime()));
             q.setTimestamp(2, new Timestamp(to.getTime()));
             q.execute();

@@ -7,10 +7,10 @@ import net.md_5.bungee.config.Configuration;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class PoolDataSource {
+public class MySQLPool {
     private static HikariDataSource ds;
 
-    public PoolDataSource(Configuration config) {
+    public MySQLPool(Configuration config) {
         HikariConfig hConfig = new HikariConfig();
         if (config.getString("database.type").equalsIgnoreCase("mysql")) {
             hConfig.setDriverClassName("com.mysql.jdbc.Driver");
@@ -31,7 +31,11 @@ public class PoolDataSource {
         ds = new HikariDataSource(hConfig);
     }
 
-    public static Connection getConnection() throws SQLException {
+    public Connection getConnection() throws SQLException {
         return ds.getConnection();
+    }
+
+    public void disconnect() {
+        ds.close();
     }
 }
