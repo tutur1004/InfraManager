@@ -11,19 +11,25 @@ database:
     password: "pass"
 # Host system (Only pterodactyl is supported for now)
 host:
+  settings:
+    # Only players in lobby can be invited
+    lobby-restricted: true
+    # List of bungee server name considered as lobby servers
+    lobby-name:
+    - lobby
   provider: pterodactyl
   # Host limits, 0 to set unlimited (BE CAREFUL WITH THESE PARAMETER !!)
   capacity:
     instances: 2
     memory: 0
   # Do not modify if you don't know how it's work
-  command: java -Xms{MEM}M -Xmx{MEM}M 
+  command: "java -Xms{MEM}M -Xmx{MEM}M 
     -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions 
     -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 
     -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 
     -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 
     -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:InitiatingHeapOccupancyPercent=15 
-    -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar server.jar nogui
+    -Dusing.aikars.flags=https://mcflags.emc.gs -Daikars.new.flags=true -jar server.jar nogui"
   pterodactyl:
     # Your full panel URL (With http/https)
     endpoint: "https://your.panel.url"

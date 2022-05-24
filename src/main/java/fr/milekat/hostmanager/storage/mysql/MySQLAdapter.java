@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -35,6 +35,7 @@ public class MySQLAdapter implements StorageExecutor {
             "WHERE uuid = '?';";
     private final String GET_GAMES = "SELECT * FROM {prefix}games;";
     private final String GET_USERS = "SELECT * FROM {prefix}users;";
+    private final String GET_USER = "SELECT * FROM {prefix}users WHERE uuid = ?;";
     private final String GET_ACTIVE_INSTANCES = "SELECT * FROM {prefix}instances i " +
             "INNER JOIN {prefix}games g ON i.game=g.game_id " +
             "WHERE i.state <>4;";
@@ -46,9 +47,9 @@ public class MySQLAdapter implements StorageExecutor {
             "WHERE (l.log_date BETWEEN ? AND ?);";
 
     private final String ADD_TICKETS = "INSERT INTO {prefix}users (uuid, last_name, tickets) " +
-            "VALUES (?,?,?) ON DUPLICATE KEY UPDATE tickets = tickets + ?;";
+            "VALUES (?,?,?) ON DUPLICATE KEY UPDATE last_name = ?, tickets = tickets + ?;";
     private final String REMOVE_TICKETS = "INSERT INTO {prefix}users (uuid, last_name, tickets) " +
-            "VALUES (?,?,?) ON DUPLICATE KEY UPDATE tickets = tickets - ?;";
+            "VALUES (?,?,?) ON DUPLICATE KEY UPDATE last_name = ?, tickets = tickets - ?;";
     private final String CREATE_GAME = "INSERT INTO {prefix}games (name, enable, image, requirements) " +
             "VALUES (?,?,?,?);";
 
@@ -164,7 +165,7 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Override
     public void addPlayerTickets(UUID uuid, String username, Integer amount) throws StorageExecuteException {
-        updatePlayerTickets(uuid, username, amount, ADD_TICKETS);
+        updateUser(uuid, username, amount, ADD_TICKETS);
     }
 
     /**
@@ -175,20 +176,7 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Override
     public void removePlayerTickets(UUID uuid, String username, Integer amount) throws StorageExecuteException {
-        updatePlayerTickets(uuid, username, amount, REMOVE_TICKETS);
-    }
-
-    private void updatePlayerTickets(UUID uuid, String username, Integer amount, String query) throws StorageExecuteException {
-        try (Connection connection = DB.getConnection();
-             PreparedStatement q = connection.prepareStatement(formatQuery(query))) {
-            q.setString(1, uuid.toString());
-            q.setString(2, username);
-            q.setInt(3, amount);
-            q.setInt(4, amount);
-            q.execute();
-        } catch (SQLException throwable) {
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
-        }
+        updateUser(uuid, username, amount, REMOVE_TICKETS);
     }
 
     /**
@@ -287,7 +275,28 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Override
     public @Nullable User getUser(UUID uuid) throws StorageExecuteException {
-        return null;
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_USER))) {
+            q.setString(1, uuid.toString());
+            q.execute();
+            return resultSetToUser(q.getResultSet());
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    private void updateUser(UUID uuid, String username, Integer amount, String query) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(query))) {
+            q.setString(1, uuid.toString());
+            q.setString(2, username);
+            q.setInt(3, amount);
+            q.setString(4, username);
+            q.setInt(5, amount);
+            q.execute();
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
     }
 
     /*
