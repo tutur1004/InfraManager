@@ -19,7 +19,7 @@ public class StorageManager {
         }
     }
 
-    public StorageExecutor getExecutor() {
+    public StorageExecutor getStorageExecutor() {
         return this.executor;
     }
 }

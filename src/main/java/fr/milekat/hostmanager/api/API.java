@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 public class API {
-    private static final StorageExecutor EXECUTOR = Main.getExecutor();
+    private static final StorageExecutor EXECUTOR = Main.getStorage();
 
     /**
      * Get tickets amount of player

@@ -15,15 +15,19 @@ import java.io.InputStreamReader;
 import java.sql.*;
 import java.util.Date;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class MySQLAdapter implements StorageExecutor {
     private final String SCHEMA_FILE = "host_schema.sql";
+    private final long CACHE_DURATION = TimeUnit.MILLISECONDS.convert(30L, TimeUnit.MINUTES);
     private final Configuration CONFIG;
     private final MySQLPool DB;
     private final String PREFIX = Main.getFileConfig().getString("database.mysql.prefix");
     private final List<String> TABLES = Arrays.asList(PREFIX + "games", PREFIX + "instances", PREFIX + "logs", PREFIX + "users");
+    private Date CACHED_GAMES_REFRESH = null;
+    private List<Game> CACHED_GAMES = new ArrayList<>();
 
     /*
         SQL Queries
@@ -34,8 +38,10 @@ public class MySQLAdapter implements StorageExecutor {
     private final String GET_TICKETS = "SELECT tickets FROM {prefix}users " +
             "WHERE uuid = '?';";
     private final String GET_GAMES = "SELECT * FROM {prefix}games;";
+    private final String GET_GAME = "SELECT * FROM {prefix}games WHERE name = ?;";
     private final String GET_USERS = "SELECT * FROM {prefix}users;";
-    private final String GET_USER = "SELECT * FROM {prefix}users WHERE uuid = ?;";
+    private final String GET_USER = "SELECT * FROM {prefix}users WHERE last_name = ?;";
+    private final String GET_USER_UUID = "SELECT * FROM {prefix}users WHERE uuid = ?;";
     private final String GET_ACTIVE_INSTANCES = "SELECT * FROM {prefix}instances i " +
             "INNER JOIN {prefix}games g ON i.game=g.game_id " +
             "WHERE i.state <>4;";
@@ -137,6 +143,10 @@ public class MySQLAdapter implements StorageExecutor {
         }
     }
 
+    /*
+        Tickets
+     */
+
     /**
      * Query tickets for this player
      * @param uuid player uuid
@@ -198,6 +208,10 @@ public class MySQLAdapter implements StorageExecutor {
         }
     }
 
+    /*
+        Games
+     */
+
     /**
      * Query all games
      * @return list of games
@@ -211,7 +225,37 @@ public class MySQLAdapter implements StorageExecutor {
             while (q.getResultSet().next()) {
                 games.add(resultSetToGame(q.getResultSet()));
             }
+            CACHED_GAMES = games;
+            CACHED_GAMES_REFRESH = new Date();
             return games;
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    /**
+     * Get last queried list of games (If list is too old, or not exist, it will re-queried the list)
+     * @return "recent" list of games
+     */
+    @Override
+    public List<Game> getGamesCached() throws StorageExecuteException {
+        if (CACHED_GAMES_REFRESH.getTime() + CACHE_DURATION < new Date().getTime()) {
+            this.getGames();
+        }
+        return CACHED_GAMES;
+    }
+
+    /**
+     * Query a games by name
+     * @return game or null if not exist
+     */
+    @Override
+    public Game getGame(String gameName) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_GAME))) {
+            q.setString(1, gameName);
+            q.execute();
+            return resultSetToGame(q.getResultSet());
         } catch (SQLException throwable) {
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
@@ -269,6 +313,23 @@ public class MySQLAdapter implements StorageExecutor {
     }
 
     /**
+     * Query a user by his name if present, otherwise return null
+     * @param name of player
+     * @return User or null
+     */
+    @Override
+    public @Nullable User getUser(String name) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_USER))) {
+            q.setString(1, name);
+            q.execute();
+            return resultSetToUser(q.getResultSet());
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    /**
      * Query a user if present, otherwise return null
      * @param uuid of player
      * @return User or null
@@ -276,7 +337,7 @@ public class MySQLAdapter implements StorageExecutor {
     @Override
     public @Nullable User getUser(UUID uuid) throws StorageExecuteException {
         try (Connection connection = DB.getConnection();
-             PreparedStatement q = connection.prepareStatement(formatQuery(GET_USER))) {
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_USER_UUID))) {
             q.setString(1, uuid.toString());
             q.execute();
             return resultSetToUser(q.getResultSet());

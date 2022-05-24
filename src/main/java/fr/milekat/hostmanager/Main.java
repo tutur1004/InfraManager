@@ -1,5 +1,8 @@
 package fr.milekat.hostmanager;
 
+import fr.milekat.hostmanager.hosts.HostExecutor;
+import fr.milekat.hostmanager.hosts.HostsManager;
+import fr.milekat.hostmanager.hosts.exeptions.HostExecuteException;
 import fr.milekat.hostmanager.storage.StorageExecutor;
 import fr.milekat.hostmanager.storage.StorageManager;
 import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
@@ -19,6 +22,7 @@ public class Main extends Plugin {
     private static Configuration configFile;
     public static Boolean DEBUG = false;
     private static StorageManager LOADED_STORAGE;
+    private static HostsManager LOADED_HOSTS_MANAGER;
 
     @Override
     public void onEnable() {
@@ -46,12 +50,26 @@ public class Main extends Plugin {
                 getHostLogger().warning("Error: " + throwable.getLocalizedMessage());
             }
         }
+        try {
+            LOADED_HOSTS_MANAGER = new HostsManager(configFile);
+            if (DEBUG) {
+                getHostLogger().info("Storage enable, API is now available");
+            }
+        } catch (HostExecuteException throwable) {
+            getHostLogger().warning("Host provider load failed, disabling plugin..");
+            this.onDisable();
+            if (DEBUG) {
+                throwable.printStackTrace();
+            } else {
+                getHostLogger().warning("Error: " + throwable.getLocalizedMessage());
+            }
+        }
     }
 
     @Override
     public void onDisable() {
         try {
-            LOADED_STORAGE.getExecutor().disconnect();
+            LOADED_STORAGE.getStorageExecutor().disconnect();
         } catch (Exception ignored) {}
     }
 
@@ -67,8 +85,16 @@ public class Main extends Plugin {
      * Get Storage Database Executor
      * @return Storage executor
      */
-    public static StorageExecutor getExecutor() {
-        return LOADED_STORAGE.getExecutor();
+    public static StorageExecutor getStorage() {
+        return LOADED_STORAGE.getStorageExecutor();
+    }
+
+    /**
+     * Get Storage Database Executor
+     * @return Storage executor
+     */
+    public static HostExecutor getHosts() {
+        return LOADED_HOSTS_MANAGER.getHostExecutor();
     }
 
     /**

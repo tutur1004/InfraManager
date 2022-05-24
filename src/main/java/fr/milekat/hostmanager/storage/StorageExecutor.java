@@ -61,6 +61,18 @@ public interface StorageExecutor {
     List<Game> getGames() throws StorageExecuteException;
 
     /**
+     * Get last queried list of games (If list is too old, or not exist, it will re-queried the list)
+     * @return "recent" list of games
+     */
+    List<Game> getGamesCached() throws StorageExecuteException;
+
+    /**
+     * Get a games by name
+     * @return game or null if not exist
+     */
+    Game getGame(String name) throws StorageExecuteException;
+
+    /**
      * Create a new game
      */
     void createGame(Game game) throws StorageExecuteException;
@@ -90,6 +102,14 @@ public interface StorageExecutor {
      * @return all users
      */
     List<User> getUsers() throws StorageExecuteException;
+
+    /**
+     * Query a user by his name if present, otherwise return null
+     * @param name of player
+     * @return User or null
+     */
+    @Nullable
+    User getUser(String name) throws StorageExecuteException;
 
     /**
      * Query a user if present, otherwise return null
