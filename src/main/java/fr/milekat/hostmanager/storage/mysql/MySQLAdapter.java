@@ -413,7 +413,8 @@ public class MySQLAdapter implements StorageExecutor {
      */
     private Instance resultSetToInstance(ResultSet r) throws SQLException {
         return new Instance(r.getString("name"),
-                r.getString("name"),
+                r.getString("description"),
+                r.getString("server_id"),
                 r.getInt("port"),
                 InstanceState.fromInteger(r.getInt("state")),
                 resultSetToGame(r),

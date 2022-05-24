@@ -28,20 +28,30 @@ public class CreateServer extends Command implements TabExecutor {
         try {
             if (args.length==2) {
                 Game game = Main.getStorage().getGame(args[1]);
-                if (!game.isEnable()) {
-                    sender.sendMessage(new TextComponent("§cThis game is disable."));
+                if (game==null || !game.isEnable()) {
+                    sender.sendMessage(new TextComponent("§cThis game is invalid or disable."));
                     return;
                 }
                 User host = Main.getStorage().getUser(((ProxiedPlayer) sender).getUniqueId());
+                if (host==null) {
+                    sender.sendMessage(new TextComponent("§cStorage error."));
+                    return;
+                }
                 Main.getHosts().createServer(new Instance(args[0], game, host));
+                sender.sendMessage(new TextComponent("§aServer created ! Wait 5s for the first start..."));
             } else if (args.length==3) {
                 Game game = Main.getStorage().getGame(args[1]);
-                if (!game.isEnable()) {
-                    sender.sendMessage(new TextComponent("§cThis game is disable."));
+                if (game==null || !game.isEnable()) {
+                    sender.sendMessage(new TextComponent("§cThis game is invalid or disable."));
                     return;
                 }
                 User host = Main.getStorage().getUser(args[2]);
+                if (host==null) {
+                    sender.sendMessage(new TextComponent("§cStorage error."));
+                    return;
+                }
                 Main.getHosts().createServer(new Instance(args[0], game, host));
+                sender.sendMessage(new TextComponent("§aServer created ! Wait 5s for the first start..."));
             } else {
                 sender.sendMessage(new TextComponent("§c/host-admin-create <server name> <game name> [<user name>]"));
             }

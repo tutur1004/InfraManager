@@ -31,8 +31,9 @@ public class Main extends Plugin {
             configFile = ConfigurationProvider.getProvider(YamlConfiguration.class).load(
                     new File(this.getDataFolder(),"config.yml")
             );
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (IOException ignore) {
+            getHostLogger().warning("Can't load config.yml file, disabling plugin..");
+            this.onDisable();
         }
         DEBUG = configFile.getBoolean("debug");
         if (DEBUG) getHostLogger().info("Debug enable");
@@ -51,7 +52,7 @@ public class Main extends Plugin {
             }
         }
         try {
-            LOADED_HOSTS_MANAGER = new HostsManager(configFile);
+            LOADED_HOSTS_MANAGER = new HostsManager(this, configFile);
             if (DEBUG) {
                 getHostLogger().info("Storage enable, API is now available");
             }

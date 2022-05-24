@@ -19,6 +19,7 @@ CREATE INDEX `{prefix}game_id` ON `{prefix}games` (`name`);
 
 CREATE TABLE `{prefix}instances` (
   `instance_id` tinyint(3) UNSIGNED NOT NULL,
+  `description` varchar(128) NOT NULL COMMENT 'Server description',
   `server_id` varchar(36) DEFAULT NULL COMMENT 'Id of instance server',
   `state` tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Game state\n0: Creating\n1: Ready\n2: In progress\n3: Ending\n4: Terminated',
   `game` smallint(5) UNSIGNED NULL COMMENT 'Game of this instance',
