@@ -94,7 +94,7 @@ public class MySQLAdapter implements StorageExecutor {
      */
     private void applySchema() throws SQLException, IOException, StorageLoaderException {
         //  Read schema file
-        InputStream schemaFileIS = MySQLDriver.class.getResourceAsStream(SCHEMA_FILE);
+        InputStream schemaFileIS = this.getClass().getResourceAsStream(SCHEMA_FILE);
         if (schemaFileIS==null) {
             throw new StorageLoaderException("Missing schema file");
         } else {
