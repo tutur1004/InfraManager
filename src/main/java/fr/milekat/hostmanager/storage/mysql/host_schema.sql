@@ -7,7 +7,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `{prefix}games` (
   `game_id` smallint(5) UNSIGNED NOT NULL,
-  `name` varchar(32) NOT NULL COMMENT 'Game name',
+  `game_name` varchar(32) NOT NULL COMMENT 'Game name',
   `create_date` timestamp NOT NULL DEFAULT current_timestamp() COMMENT 'Date when this line was added, UTC time',
   `enable` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Bool: if the game is enable and playable',
   `game_version` varchar(20) NOT NULL COMMENT 'Game version',
@@ -15,19 +15,21 @@ CREATE TABLE `{prefix}games` (
   `image` varchar(255) NOT NULL COMMENT 'Full image repo of this game',
   `requirements` smallint(5) UNSIGNED NOT NULL DEFAULT 2048 COMMENT 'amount of needed RAM to run this game (MB)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='List of all created games';
-CREATE INDEX `{prefix}game_id` ON `{prefix}games` (`name`);
+CREATE INDEX `{prefix}game_id` ON `{prefix}games` (`game_name`);
 
 CREATE TABLE `{prefix}instances` (
   `instance_id` tinyint(3) UNSIGNED NOT NULL,
-  `description` varchar(128) NOT NULL COMMENT 'Server description',
-  `server_id` varchar(36) DEFAULT NULL COMMENT 'Id of instance server',
+  `instance_name` varchar(32) NOT NULL COMMENT 'Instance name',
+  `instance_description` varchar(128) NOT NULL COMMENT 'Instance description',
+  `instance_server_id` varchar(36) DEFAULT NULL COMMENT 'Id of instance server',
+  `port` smallint(5) NOT NULL COMMENT 'Instance port',
   `state` tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Game state\n0: Creating\n1: Ready\n2: In progress\n3: Ending\n4: Terminated',
   `game` smallint(5) UNSIGNED NULL COMMENT 'Game of this instance',
   `user` int(10) UNSIGNED DEFAULT NULL COMMENT 'Host user',
-  `creation` timestamp NOT NULL DEFAULT current_timestamp() COMMENT 'Date of server creation',
-  `deletion` timestamp NOT NULL DEFAULT current_timestamp() COMMENT 'Date of server deletion'
+  `creation` timestamp NOT NULL DEFAULT current_timestamp() COMMENT 'Date of instance creation',
+  `deletion` timestamp NOT NULL DEFAULT current_timestamp() COMMENT 'Date of instance deletion'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='This table list all instances, with their current state';
-CREATE INDEX `{prefix}instances_name` ON `{prefix}instances` (`server_id`);
+CREATE INDEX `{prefix}instances_name` ON `{prefix}instances` (`instance_server_id`);
 
 CREATE TABLE `{prefix}logs` (
   `log_id` int(10) UNSIGNED NOT NULL,
@@ -50,7 +52,7 @@ CREATE INDEX `{prefix}users_uuid` ON `{prefix}users` (`uuid`);
 
 ALTER TABLE `{prefix}games`
     ADD PRIMARY KEY (`game_id`),
-    ADD UNIQUE KEY `unique_name` (`name`) USING BTREE;
+    ADD UNIQUE KEY `unique_name` (`game_name`) USING BTREE;
 
 ALTER TABLE `{prefix}instances`
     ADD PRIMARY KEY (`instance_id`),

@@ -45,6 +45,9 @@ public class MySQLAdapter implements StorageExecutor {
     private final String GET_ACTIVE_INSTANCES = "SELECT * FROM {prefix}instances i " +
             "INNER JOIN {prefix}games g ON i.game=g.game_id " +
             "WHERE i.state <>4;";
+    private final String GET_INSTANCE = "SELECT * FROM {prefix}instances i " +
+            "INNER JOIN {prefix}games g ON i.game=g.game_id " +
+            "WHERE i.state <>4 AND i.name = ?;";
     private final String GET_N_LOGS = "SELECT * FROM {prefix}logs ORDER BY log_id DESC LIMIT ?;";
     private final String GET_LOGS_WITHIN_DATE = "SELECT * FROM {prefix}logs l " +
             "INNER JOIN {prefix}instances i ON l.instance = i.instance_id " +
@@ -189,25 +192,6 @@ public class MySQLAdapter implements StorageExecutor {
         updateUser(uuid, username, amount, REMOVE_TICKETS);
     }
 
-    /**
-     * Query active instances
-     * @return list of instances
-     */
-    @Override
-    public List<Instance> getActiveInstances() throws StorageExecuteException {
-        try (Connection connection = DB.getConnection();
-             PreparedStatement q = connection.prepareStatement(formatQuery(GET_ACTIVE_INSTANCES))) {
-            q.execute();
-            List<Instance> instances = new ArrayList<>();
-            while (q.getResultSet().next()) {
-                instances.add(resultSetToInstance(q.getResultSet()));
-            }
-            return instances;
-        } catch (SQLException throwable) {
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
-        }
-    }
-
     /*
         Games
      */
@@ -285,6 +269,46 @@ public class MySQLAdapter implements StorageExecutor {
             q.setString(3, game.getImage());
             q.setInt(4, game.getRequirements());
             q.execute();
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    /*
+        Instance
+     */
+
+    /**
+     * Query active instances
+     * @return list of instances
+     */
+    @Override
+    public List<Instance> getActiveInstances() throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_ACTIVE_INSTANCES))) {
+            q.execute();
+            List<Instance> instances = new ArrayList<>();
+            while (q.getResultSet().next()) {
+                instances.add(resultSetToInstance(q.getResultSet()));
+            }
+            return instances;
+        } catch (SQLException throwable) {
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    /**
+     * Query an instance
+     * @param name of instance
+     * @return instance (If exist)
+     */
+    @Override
+    public @Nullable Instance getInstance(String name) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(GET_INSTANCE))) {
+            q.setString(1, name);
+            q.execute();
+            return resultSetToInstance(q.getResultSet());
         } catch (SQLException throwable) {
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
@@ -412,9 +436,9 @@ public class MySQLAdapter implements StorageExecutor {
      * Shortcut to convert MySQL instance row into instance class
      */
     private Instance resultSetToInstance(ResultSet r) throws SQLException {
-        return new Instance(r.getString("name"),
-                r.getString("description"),
-                r.getString("server_id"),
+        return new Instance(r.getString("instance_name"),
+                r.getString("instance_description"),
+                r.getString("instance_server_id"),
                 r.getInt("port"),
                 InstanceState.fromInteger(r.getInt("state")),
                 resultSetToGame(r),

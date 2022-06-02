@@ -91,7 +91,14 @@ public interface StorageExecutor {
      * @return list of instances
      */
     List<Instance> getActiveInstances() throws StorageExecuteException;
-    // TODO: 01/05/2022 Instances queries
+
+    /**
+     * Query an instance
+     * @param name of instance
+     * @return instance (If exist)
+     */
+    @Nullable
+    Instance getInstance(String name) throws StorageExecuteException;
 
     /*
         Users
