@@ -47,7 +47,7 @@ public class MySQLAdapter implements StorageExecutor {
             "WHERE i.state <>4;";
     private final String GET_INSTANCE = "SELECT * FROM {prefix}instances i " +
             "INNER JOIN {prefix}games g ON i.game=g.game_id " +
-            "WHERE i.state <>4 AND i.name = ?;";
+            "WHERE i.state <>4 AND i.instance_name = ?;";
     private final String GET_N_LOGS = "SELECT * FROM {prefix}logs ORDER BY log_id DESC LIMIT ?;";
     private final String GET_LOGS_WITHIN_DATE = "SELECT * FROM {prefix}logs l " +
             "INNER JOIN {prefix}instances i ON l.instance = i.instance_id " +

@@ -53,6 +53,22 @@ public class PterodactylRequests extends HttpExecute {
     }
 
     /**
+     * Delete a server from
+     * @param instance representation of the desired server (At least the server id)
+     */
+    public static void deleteServer(Instance instance) throws HostExecuteException {
+        try {
+            execute(new URL(ENDPOINT + "/api/application/servers/" + instance.getServerId() + "/force"),
+                    "DELETE", KEY, "");
+        } catch (IOException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
+            throw new HostExecuteException(throwable, "Pterodactyl API error, URL IOException ?");
+        }
+    }
+
+    /**
      * Create an allocation on this port
      * @param port allocation port
      * @return allocation id

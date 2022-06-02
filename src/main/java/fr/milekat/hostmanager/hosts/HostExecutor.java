@@ -12,7 +12,7 @@ public interface HostExecutor {
     /**
      * Delete an existing server instance from provider
      */
-    void deleteServer(String serverName) throws HostExecuteException;
+    void deleteServer(Instance instance) throws HostExecuteException;
 
     /**
      * Check if host provider is reachable

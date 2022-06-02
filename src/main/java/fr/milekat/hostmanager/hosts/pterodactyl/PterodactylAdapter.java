@@ -4,6 +4,8 @@ import fr.milekat.hostmanager.Main;
 import fr.milekat.hostmanager.api.classes.Instance;
 import fr.milekat.hostmanager.api.classes.InstanceState;
 import fr.milekat.hostmanager.api.events.ServerCreatedEvent;
+import fr.milekat.hostmanager.api.events.ServerDeletedEvent;
+import fr.milekat.hostmanager.api.events.ServerDeletionEvent;
 import fr.milekat.hostmanager.hosts.HostExecutor;
 import fr.milekat.hostmanager.hosts.exeptions.HostExecuteException;
 import net.md_5.bungee.api.ProxyServer;
@@ -65,7 +67,7 @@ public class PterodactylAdapter implements HostExecutor {
             Main.getHostLogger().warning("Error while trying to parse date: " +
                     server.getString("attributes.created_at"));
         }
-        instance.setServerId(server.getString("attributes.uuid"));
+        instance.setServerId(server.getString("attributes.id"));
         instance.setState(InstanceState.CREATING);
 
         ServerCreatedEvent event = new ServerCreatedEvent(instance);
@@ -73,7 +75,14 @@ public class PterodactylAdapter implements HostExecutor {
     }
 
     @Override
-    public void deleteServer(String serverName) throws HostExecuteException {
+    public void deleteServer(Instance instance) throws HostExecuteException {
+        ServerDeletionEvent deletionEvent = new ServerDeletionEvent(instance);
+        ProxyServer.getInstance().getPluginManager().callEvent(deletionEvent);
+        if (deletionEvent.isCancelled()) return;
 
+        PterodactylRequests.deleteServer(instance);
+
+        ServerDeletedEvent deletedEvent = new ServerDeletedEvent(instance);
+        ProxyServer.getInstance().getPluginManager().callEvent(deletedEvent);
     }
 }

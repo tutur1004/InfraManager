@@ -13,6 +13,14 @@ public class Instance {
     private Date creation;
     private Date deletion;
 
+    public Instance(String name, String serverId) {
+        this.name = name;
+        this.description = null;
+        this.serverId = serverId;
+        this.game = null;
+        this.host = null;
+    }
+
     public Instance(String name, Game game, User host) {
         this.name = name;
         this.description = "Server created by: " + host.getLastName();
