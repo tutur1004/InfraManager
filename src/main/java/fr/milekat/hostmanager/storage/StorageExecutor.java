@@ -100,6 +100,28 @@ public interface StorageExecutor {
     @Nullable
     Instance getInstance(String name) throws StorageExecuteException;
 
+    /**
+     * Create a new instance
+     */
+    void createInstance(Instance instance) throws StorageExecuteException;
+
+    /**
+     * Save an instance
+     */
+    void updateInstance(Instance instance) throws StorageExecuteException;
+
+    /**
+     *
+     */
+    void unlinkInstance(Instance instance) throws StorageExecuteException;
+
+    /**
+     * Find an available port in given list
+     * @return a port number or null if all ports are reserved
+     */
+    @Nullable
+    Integer findAvailablePort(List<Integer> ports) throws StorageExecuteException;
+
     /*
         Users
      */

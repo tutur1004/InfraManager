@@ -3,6 +3,7 @@ package fr.milekat.hostmanager.api.classes;
 import java.util.Date;
 
 public class Instance {
+    private final Integer id;
     private final String name;
     private final String description;
     private String serverId;
@@ -14,6 +15,7 @@ public class Instance {
     private Date deletion;
 
     public Instance(String name, String serverId) {
+        this.id = null;
         this.name = name;
         this.description = null;
         this.serverId = serverId;
@@ -22,13 +24,15 @@ public class Instance {
     }
 
     public Instance(String name, Game game, User host) {
+        this.id = null;
         this.name = name;
         this.description = "Server created by: " + host.getLastName();
         this.game = game;
         this.host = host;
     }
 
-    public Instance(String name, String description, String serverId, int port, InstanceState state, Game game, User host, Date creation, Date deletion) {
+    public Instance(Integer id, String name, String description, String serverId, int port, InstanceState state, Game game, User host, Date creation, Date deletion) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this.serverId = serverId;
@@ -38,6 +42,10 @@ public class Instance {
         this.host = host;
         this.creation = creation;
         this.deletion = deletion;
+    }
+
+    public Integer getId() {
+        return id;
     }
 
     public String getName() {
@@ -58,6 +66,10 @@ public class Instance {
 
     public int getPort() {
         return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public InstanceState getState() {

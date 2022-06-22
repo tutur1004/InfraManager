@@ -27,7 +27,7 @@ CREATE TABLE `{prefix}instances` (
   `game` smallint(5) UNSIGNED NULL COMMENT 'Game of this instance',
   `user` int(10) UNSIGNED DEFAULT NULL COMMENT 'Host user',
   `creation` timestamp NOT NULL DEFAULT current_timestamp() COMMENT 'Date of instance creation',
-  `deletion` timestamp NOT NULL DEFAULT current_timestamp() COMMENT 'Date of instance deletion'
+  `deletion` timestamp NULL DEFAULT current_timestamp() COMMENT 'Date of instance deletion'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='This table list all instances, with their current state';
 CREATE INDEX `{prefix}instances_name` ON `{prefix}instances` (`instance_server_id`);
 
@@ -85,12 +85,12 @@ ALTER TABLE `{prefix}users`
 -- FOREIGN KEY
 
 ALTER TABLE `{prefix}instances`
-    ADD CONSTRAINT `host_instances_ibfk_1` FOREIGN KEY (`user`) REFERENCES `{prefix}users` (`user_id`),
-    ADD CONSTRAINT `host_instances_ibfk_2` FOREIGN KEY (`game`) REFERENCES `{prefix}games` (`game_id`);
+    ADD CONSTRAINT `{prefix}instances_ibfk_1` FOREIGN KEY (`user`) REFERENCES `{prefix}users` (`user_id`),
+    ADD CONSTRAINT `{prefix}instances_ibfk_2` FOREIGN KEY (`game`) REFERENCES `{prefix}games` (`game_id`);
 
 ALTER TABLE `{prefix}logs`
-    ADD CONSTRAINT `host_logs_ibfk_1` FOREIGN KEY (`user`) REFERENCES `{prefix}users` (`user_id`),
-    ADD CONSTRAINT `host_logs_ibfk_2` FOREIGN KEY (`game`) REFERENCES `{prefix}games` (`game_id`),
-    ADD CONSTRAINT `host_logs_ibfk_3` FOREIGN KEY (`instance`) REFERENCES `{prefix}instances` (`instance_id`);
+    ADD CONSTRAINT `{prefix}logs_ibfk_1` FOREIGN KEY (`user`) REFERENCES `{prefix}users` (`user_id`),
+    ADD CONSTRAINT `{prefix}logs_ibfk_2` FOREIGN KEY (`game`) REFERENCES `{prefix}games` (`game_id`),
+    ADD CONSTRAINT `{prefix}logs_ibfk_3` FOREIGN KEY (`instance`) REFERENCES `{prefix}instances` (`instance_id`);
 
 COMMIT;

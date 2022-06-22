@@ -21,4 +21,8 @@ public enum InstanceState {
         }
         return null;
     }
+
+    public int getStateId() {
+        return stateId;
+    }
 }

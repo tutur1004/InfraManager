@@ -36,9 +36,9 @@ public class MySQLAdapter implements StorageExecutor {
             "WHERE TABLE_NAME = ?;";
 
     private final String GET_TICKETS = "SELECT tickets FROM {prefix}users " +
-            "WHERE uuid = '?';";
+            "WHERE uuid = ?;";
     private final String GET_GAMES = "SELECT * FROM {prefix}games;";
-    private final String GET_GAME = "SELECT * FROM {prefix}games WHERE name = ?;";
+    private final String GET_GAME = "SELECT * FROM {prefix}games WHERE game_name = ?;";
     private final String GET_USERS = "SELECT * FROM {prefix}users;";
     private final String GET_USER = "SELECT * FROM {prefix}users WHERE last_name = ?;";
     private final String GET_USER_UUID = "SELECT * FROM {prefix}users WHERE uuid = ?;";
@@ -54,15 +54,29 @@ public class MySQLAdapter implements StorageExecutor {
             "INNER JOIN {prefix}users u on l.user = u.user_id " +
             "INNER JOIN {prefix}games g on l.game = g.game_id " +
             "WHERE (l.log_date BETWEEN ? AND ?);";
+    private final String FIND_AVAILABLE_PORTS = "SELECT port FROM {prefix}instances " +
+            "WHERE state <>4;";
 
     private final String ADD_TICKETS = "INSERT INTO {prefix}users (uuid, last_name, tickets) " +
             "VALUES (?,?,?) ON DUPLICATE KEY UPDATE last_name = ?, tickets = tickets + ?;";
     private final String REMOVE_TICKETS = "INSERT INTO {prefix}users (uuid, last_name, tickets) " +
             "VALUES (?,?,?) ON DUPLICATE KEY UPDATE last_name = ?, tickets = tickets - ?;";
-    private final String CREATE_GAME = "INSERT INTO {prefix}games (name, enable, image, requirements) " +
+    private final String CREATE_GAME = "INSERT INTO {prefix}games " +
+            "(name, enable, image, requirements) " +
             "VALUES (?,?,?,?);";
+    private final String CREATE_INSTANCE = "INSERT INTO {prefix}instances " +
+            "(instance_name, instance_description, instance_server_id, port, state, game, user, creation) " +
+            "VALUES (?,?,?,?,?,?,?,?);";
 
-    private final String UPDATE_GAME = "UPDATE {prefix}games SET name=?, enable=?, image=?, requirements=?";
+    private final String UPDATE_GAME = "UPDATE {prefix}games " +
+            "SET name=?, enable=?, image=?, requirements=?";
+    // TODO: 23/06/2022 Get instance by id ? As the name is not unique..
+    private final String UPDATE_INSTANCE = "UPDATE {prefix}instances " +
+            "SET instance_server_id=?, state=?, game=?, user=? " +
+            "WHERE instance_name = ?";
+    private final String UNLINK_INSTANCE = "UPDATE {prefix}instances " +
+            "SET instance_server_id=NULL, state=0, game=NULL, user=NULL " +
+            "WHERE instance_name = ?";
 
     /**
      * Format query by replacing {prefix} with {@link MySQLAdapter#PREFIX}
@@ -73,8 +87,9 @@ public class MySQLAdapter implements StorageExecutor {
 
     public MySQLAdapter(Configuration config) throws StorageLoaderException {
         this.CONFIG = config;
+        DB = new MySQLPool(config);
+        /*
         try {
-            DB = new MySQLPool(config);
             applySchema();
         } catch (SQLException | IOException throwable) {
             if (Main.DEBUG) {
@@ -82,6 +97,7 @@ public class MySQLAdapter implements StorageExecutor {
             }
             throw new StorageLoaderException("Unsupported database type");
         }
+        */
     }
 
     /**
@@ -97,22 +113,25 @@ public class MySQLAdapter implements StorageExecutor {
      */
     private void applySchema() throws SQLException, IOException, StorageLoaderException {
         //  Read schema file
-        InputStream schemaFileIS = this.getClass().getResourceAsStream(SCHEMA_FILE);
-        if (schemaFileIS==null) {
-            throw new StorageLoaderException("Missing schema file");
-        } else {
-            InputStreamReader streamFile = new InputStreamReader(schemaFileIS);
-            BufferedReader bufferedReader = new BufferedReader(streamFile);
-            //  Apply Schema
-            try (Connection connection = DB.getConnection();
-                 PreparedStatement q = connection.prepareStatement(bufferedReader.lines()
-                         .filter(line -> !line.startsWith("--"))
-                         .collect(Collectors.joining())
-                         .replaceAll("\\{prefix}", CONFIG.getString("database.mysql.prefix")))) {
-                q.execute();
-            } catch (Exception throwable) {
-                if (!throwable.getMessage().contains("already exists") && Main.DEBUG) {
-                    throwable.printStackTrace();
+        try (InputStream schemaFileIS = this.getClass().getResourceAsStream(SCHEMA_FILE)) {
+            if (schemaFileIS==null) {
+                throw new StorageLoaderException("Missing schema file");
+            } else {
+                //  Apply Schema
+                try (Connection connection = DB.getConnection();
+                     InputStreamReader streamFile = new InputStreamReader(schemaFileIS);
+                     BufferedReader bufferedReader = new BufferedReader(streamFile)) {
+                    connection.setAutoCommit(false);
+                    PreparedStatement q = connection.prepareStatement(bufferedReader.lines()
+                            .filter(line -> !line.startsWith("--"))
+                            .collect(Collectors.joining("\n"))
+                            .replaceAll("\\{prefix}", CONFIG.getString("database.mysql.prefix")));
+                    q.execute();
+                    connection.setAutoCommit(true);
+                } catch (Exception throwable) {
+                    if (!throwable.getMessage().contains("already exists") && Main.DEBUG) {
+                        throwable.printStackTrace();
+                    }
                 }
             }
         }
@@ -166,6 +185,9 @@ public class MySQLAdapter implements StorageExecutor {
             }
             return 0;
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -213,6 +235,9 @@ public class MySQLAdapter implements StorageExecutor {
             CACHED_GAMES_REFRESH = new Date();
             return games;
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -239,8 +264,13 @@ public class MySQLAdapter implements StorageExecutor {
              PreparedStatement q = connection.prepareStatement(formatQuery(GET_GAME))) {
             q.setString(1, gameName);
             q.execute();
-            return resultSetToGame(q.getResultSet());
+            if (q.getResultSet().next()) {
+                return resultSetToGame(q.getResultSet());
+            } else return null;
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -270,6 +300,9 @@ public class MySQLAdapter implements StorageExecutor {
             q.setInt(4, game.getRequirements());
             q.execute();
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -293,6 +326,9 @@ public class MySQLAdapter implements StorageExecutor {
             }
             return instances;
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -308,8 +344,89 @@ public class MySQLAdapter implements StorageExecutor {
              PreparedStatement q = connection.prepareStatement(formatQuery(GET_INSTANCE))) {
             q.setString(1, name);
             q.execute();
-            return resultSetToInstance(q.getResultSet());
+            if (q.getResultSet().next()) {
+                return resultSetToInstance(q.getResultSet());
+            } else return null;
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    @Override
+    public void createInstance(Instance instance) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(CREATE_INSTANCE))) {
+            q.setString(1, instance.getName());
+            q.setString(2, instance.getDescription());
+            q.setString(3, instance.getServerId());
+            q.setInt(4, instance.getPort());
+            q.setInt(5, instance.getState().getStateId());
+            q.setInt(6, instance.getGame().getId());
+            q.setInt(7, instance.getHost().getId());
+            q.setTimestamp(8, new Timestamp(instance.getCreation().getTime()));
+            q.execute();
+        } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    @Override
+    public void updateInstance(Instance instance) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(UPDATE_INSTANCE))) {
+            q.setString(1, instance.getServerId());
+            q.setInt(2, instance.getState().getStateId());
+            q.setInt(3, instance.getGame().getId());
+            q.setInt(4, instance.getHost().getId());
+            q.setString(5, instance.getName());
+            q.execute();
+        } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    @Override
+    public void unlinkInstance(Instance instance) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(UNLINK_INSTANCE))) {
+            q.setString(1, instance.getName());
+            q.execute();
+        } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
+            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        }
+    }
+
+    @Override
+    public @Nullable Integer findAvailablePort(List<Integer> ports) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(FIND_AVAILABLE_PORTS))) {
+            q.execute();
+            List<Integer> usedPorts = new ArrayList<>();
+            while (q.getResultSet().next()) {
+                usedPorts.add(q.getResultSet().getInt("port"));
+            }
+            for (Integer port : ports) {
+                if (!usedPorts.contains(port)) {
+                    return port;
+                }
+            }
+            return null;
+        } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -332,6 +449,9 @@ public class MySQLAdapter implements StorageExecutor {
             }
             return games;
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -347,8 +467,13 @@ public class MySQLAdapter implements StorageExecutor {
              PreparedStatement q = connection.prepareStatement(formatQuery(GET_USER))) {
             q.setString(1, name);
             q.execute();
-            return resultSetToUser(q.getResultSet());
+            if (q.getResultSet().next()) {
+                return resultSetToUser(q.getResultSet());
+            } else return null;
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -364,8 +489,13 @@ public class MySQLAdapter implements StorageExecutor {
              PreparedStatement q = connection.prepareStatement(formatQuery(GET_USER_UUID))) {
             q.setString(1, uuid.toString());
             q.execute();
-            return resultSetToUser(q.getResultSet());
+            if (q.getResultSet().next()) {
+                return resultSetToUser(q.getResultSet());
+            } else return null;
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -380,6 +510,9 @@ public class MySQLAdapter implements StorageExecutor {
             q.setInt(5, amount);
             q.execute();
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -403,6 +536,9 @@ public class MySQLAdapter implements StorageExecutor {
             }
             return logs;
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -425,6 +561,9 @@ public class MySQLAdapter implements StorageExecutor {
             }
             return logs;
         } catch (SQLException throwable) {
+            if (Main.DEBUG) {
+                throwable.printStackTrace();
+            }
             throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
         }
     }
@@ -436,7 +575,8 @@ public class MySQLAdapter implements StorageExecutor {
      * Shortcut to convert MySQL instance row into instance class
      */
     private Instance resultSetToInstance(ResultSet r) throws SQLException {
-        return new Instance(r.getString("instance_name"),
+        return new Instance(r.getInt("instance_id"),
+                r.getString("instance_name"),
                 r.getString("instance_description"),
                 r.getString("instance_server_id"),
                 r.getInt("port"),
@@ -452,7 +592,8 @@ public class MySQLAdapter implements StorageExecutor {
      * Shortcut to convert MySQL game row into game class
      */
     private Game resultSetToGame(ResultSet r) throws SQLException {
-        return new Game(r.getString("name"),
+        return new Game(r.getInt("game_id"),
+                r.getString("game_name"),
                 new Date(r.getTimestamp("create_date").getTime()),
                 r.getBoolean("enable"),
                 r.getString("game_version"),
@@ -476,7 +617,8 @@ public class MySQLAdapter implements StorageExecutor {
      * Shortcut to convert MySQL user row into user class
      */
     private User resultSetToUser(ResultSet r) throws SQLException {
-        return new User(UUID.fromString(r.getString("uuid")),
+        return new User(r.getInt("user_id"),
+                UUID.fromString(r.getString("uuid")),
                 r.getString("last_name"),
                 r.getInt("tickets"));
     }

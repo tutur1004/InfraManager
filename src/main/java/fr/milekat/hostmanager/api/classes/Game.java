@@ -5,6 +5,7 @@ import net.md_5.bungee.api.ProxyServer;
 import java.util.Date;
 
 public class Game {
+    private final Integer id;
     private final String name;
     private final Date create;
     private final boolean enable;
@@ -14,6 +15,7 @@ public class Game {
     private final int requirements;
 
     public Game(String name, boolean enable, String image, int requirements) {
+        this.id = null;
         this.name = name;
         this.create = new Date();
         this.enable = enable;
@@ -23,7 +25,8 @@ public class Game {
         this.requirements = requirements;
     }
 
-    public Game(String name, Date create, boolean enable, String gameVersion, String serverVersion, String image, int requirements) {
+    public Game(Integer id, String name, Date create, boolean enable, String gameVersion, String serverVersion, String image, int requirements) {
+        this.id = id;
         this.name = name;
         this.create = create;
         this.enable = enable;
@@ -31,6 +34,10 @@ public class Game {
         this.serverVersion = serverVersion;
         this.image = image;
         this.requirements = requirements;
+    }
+
+    public Integer getId() {
+        return id;
     }
 
     public String getName() {

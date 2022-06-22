@@ -13,7 +13,7 @@ public class MySQLPool {
     public MySQLPool(Configuration config) {
         HikariConfig hConfig = new HikariConfig();
         if (config.getString("database.type").equalsIgnoreCase("mysql")) {
-            hConfig.setDriverClassName("com.mysql.jdbc.Driver");
+            hConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
             hConfig.setJdbcUrl( "jdbc:mysql://" +
                     config.getString("database.mysql.hostname") + "/" +
                     config.getString("database.mysql.database"));
