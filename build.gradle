@@ -12,6 +12,9 @@ jar {
 }
 
 shadowJar{
+    from('src/main/java') {
+        include "fr/milekat/hostmanager/storage/mysql/host_schema.sql"
+    }
     getArchiveClassifier().set(null)
 }
 
