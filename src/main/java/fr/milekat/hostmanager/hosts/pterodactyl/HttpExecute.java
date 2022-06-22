@@ -22,26 +22,31 @@ public class HttpExecute {
             connection.setRequestProperty("Content-Type", "application/json; utf-8");
             connection.setRequestProperty("Accept", "application/json");
 
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
+
             connection.setUseCaches(false);
             connection.setDoOutput(true);
 
-            try (OutputStream os = connection.getOutputStream()) {
-                byte[] input = body.getBytes(StandardCharsets.UTF_8);
-                os.write(input, 0, input.length);
-            } catch (IOException exception) {
-                if (Main.DEBUG) {
-                    Main.getHostLogger().warning("Url: " + url);
-                    Main.getHostLogger().warning("RequestMethod: " + method);
-                    Main.getHostLogger().warning("Bearer: " + key);
-                    Main.getHostLogger().warning("Body: " + body);
-                    exception.printStackTrace();
+            connection.connect();
+
+            if (body!=null) {
+                try (OutputStream os = connection.getOutputStream()) {
+                    byte[] input = body.getBytes(StandardCharsets.UTF_8);
+                    os.write(input, 0, input.length);
+                } catch (IOException exception) {
+                    if (Main.DEBUG) {
+                        Main.getHostLogger().warning("Url: " + url);
+                        Main.getHostLogger().warning("RequestMethod: " + method);
+                        Main.getHostLogger().warning("Bearer: " + key);
+                        Main.getHostLogger().warning("Body: " + body);
+                        exception.printStackTrace();
+                    }
+                    throw new HostExecuteException(exception, "Pterodactyl API call error, during output writing, URL: " + url);
                 }
-                throw new HostExecuteException(exception, "Pterodactyl API call error, during output writing, URL: " + url);
             }
 
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))
-            ) {
+            try (InputStreamReader iSR = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
+                 BufferedReader br = new BufferedReader(iSR)) {
                 StringBuilder response = new StringBuilder();
                 String responseLine;
                 while ((responseLine = br.readLine()) != null) {

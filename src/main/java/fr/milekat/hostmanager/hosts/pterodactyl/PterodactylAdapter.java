@@ -7,12 +7,16 @@ import fr.milekat.hostmanager.api.events.ServerCreatedEvent;
 import fr.milekat.hostmanager.api.events.ServerDeletedEvent;
 import fr.milekat.hostmanager.api.events.ServerDeletionEvent;
 import fr.milekat.hostmanager.hosts.HostExecutor;
+import fr.milekat.hostmanager.hosts.bungee.ServerManager;
 import fr.milekat.hostmanager.hosts.exeptions.HostExecuteException;
+import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import net.md_5.bungee.api.ProxyServer;
 import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.stream.Collectors;
 
 public class PterodactylAdapter implements HostExecutor {
     /**
@@ -48,7 +52,7 @@ public class PterodactylAdapter implements HostExecutor {
         //      throw new HostExecuteException(throwable,
         //              "Admin API key is incorrect or doesn't have the required permissions");
         //  }
-        return false;
+        return true;
     }
 
     /**
@@ -56,19 +60,46 @@ public class PterodactylAdapter implements HostExecutor {
      * @param instance server params
      */
     @Override
-    public void createServer(Instance instance) throws HostExecuteException {
+    public void createServer(Instance instance) throws HostExecuteException, StorageExecuteException {
+
+        // TODO: 23/06/2022 Check if this player is not currently having a instance with this name
+
+        if (instance.getPort()==0) {
+            Integer port = getAvailablePort();
+            if (port!=null) {
+                instance.setPort(port);
+            } else {
+                Main.getHostLogger().warning("No port available.");
+                throw new HostExecuteException("No port available.");
+            }
+        }
+
         JSONObject server = PterodactylRequests.setupServer(instance);
 
-        try {
-            instance.setCreation(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-                    .parse(server.getString("attributes.created_at")));
-        } catch (ParseException e) {
-            e.printStackTrace();
-            Main.getHostLogger().warning("Error while trying to parse date: " +
-                    server.getString("attributes.created_at"));
+        if (server.has("attributes")) {
+            JSONObject attributes = server.getJSONObject("attributes");
+            instance.setServerId(String.valueOf(attributes.getInt("id")));
+            instance.setState(InstanceState.CREATING);
+            try {
+                instance.setCreation(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+                        .parse(attributes.getString("created_at")
+                                .replaceAll("\\+00:00$", "")
+                        )
+                );
+            } catch (ParseException e) {
+                e.printStackTrace();
+                Main.getHostLogger().warning("Error while trying to parse date: " +
+                        attributes.getString("created_at"));
+                instance.setCreation(new Date());
+            }
+        } else {
+            instance.setCreation(new Date());
+            instance.setServerId(null);
         }
-        instance.setServerId(server.getString("attributes.id"));
-        instance.setState(InstanceState.CREATING);
+
+        Main.getStorage().createInstance(instance);
+
+        ServerManager.addServer(instance.getName(), instance.getPort());
 
         ServerCreatedEvent event = new ServerCreatedEvent(instance);
         ProxyServer.getInstance().getPluginManager().callEvent(event);
@@ -84,5 +115,16 @@ public class PterodactylAdapter implements HostExecutor {
 
         ServerDeletedEvent deletedEvent = new ServerDeletedEvent(instance);
         ProxyServer.getInstance().getPluginManager().callEvent(deletedEvent);
+    }
+
+    /**
+     * Get an available port
+     */
+    private Integer getAvailablePort() throws StorageExecuteException {
+        return Main.getStorage().findAvailablePort(Main.getFileConfig()
+                .getList("host.ports")
+                .stream()
+                .map(o -> Integer.valueOf(o.toString()))
+                .collect(Collectors.toList()));
     }
 }

@@ -34,10 +34,11 @@ public class CreateServer extends Command implements TabExecutor {
                 }
                 User host = Main.getStorage().getUser(((ProxiedPlayer) sender).getUniqueId());
                 if (host==null) {
-                    sender.sendMessage(new TextComponent("§cStorage error."));
+                    sender.sendMessage(new TextComponent("§cStorage error, you are not registered."));
                     return;
                 }
                 Main.getHosts().createServer(new Instance(args[0], game, host));
+                Main.getHostLogger().info(sender.getName() + " has created a new host.");
                 sender.sendMessage(new TextComponent("§aServer created ! Wait 5s for the first start..."));
             } else if (args.length==3) {
                 Game game = Main.getStorage().getGame(args[1]);
@@ -47,10 +48,11 @@ public class CreateServer extends Command implements TabExecutor {
                 }
                 User host = Main.getStorage().getUser(args[2]);
                 if (host==null) {
-                    sender.sendMessage(new TextComponent("§cStorage error."));
+                    sender.sendMessage(new TextComponent("§cUser not found."));
                     return;
                 }
                 Main.getHosts().createServer(new Instance(args[0], game, host));
+                Main.getHostLogger().info(sender.getName() + " has created a new host for " + args[2]);
                 sender.sendMessage(new TextComponent("§aServer created ! Wait 5s for the first start..."));
             } else {
                 sender.sendMessage(new TextComponent("§c/host-admin-create <server name> <game name> [<user name>]"));

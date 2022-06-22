@@ -3,6 +3,7 @@ package fr.milekat.hostmanager.hosts.pterodactyl;
 import fr.milekat.hostmanager.Main;
 import fr.milekat.hostmanager.api.classes.Instance;
 import fr.milekat.hostmanager.hosts.exeptions.HostExecuteException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -19,10 +20,7 @@ public class PterodactylRequests extends HttpExecute {
      */
     public static JSONObject setupServer(Instance instance) throws HostExecuteException {
         try {
-            if (instance.getPort()==0) {
-                // TODO: 25/05/2022 storage find available port
-            }
-            JSONObject server = execute(new URL(ENDPOINT + "/api/application/servers"), "POST", KEY,
+            return execute(new URL(ENDPOINT + "/api/application/servers"), "POST", KEY,
                     new JSONObject().put("name", instance.getName())
                             .put("description", instance.getDescription())
                             .put("user", Main.getFileConfig().getString("host.pterodactyl.account.id"))
@@ -38,7 +36,6 @@ public class PterodactylRequests extends HttpExecute {
                             .put("allocation", new JSONObject().put("default", setupAllocation(instance.getPort())))
                             .put("start_on_completion", true)
                             .toString());
-            return server;
         } catch (IOException throwable) {
             if (Main.DEBUG) {
                 throwable.printStackTrace();
@@ -59,7 +56,7 @@ public class PterodactylRequests extends HttpExecute {
     public static void deleteServer(Instance instance) throws HostExecuteException {
         try {
             execute(new URL(ENDPOINT + "/api/application/servers/" + instance.getServerId() + "/force"),
-                    "DELETE", KEY, "");
+                    "DELETE", KEY, null);
         } catch (IOException throwable) {
             if (Main.DEBUG) {
                 throwable.printStackTrace();
@@ -75,7 +72,6 @@ public class PterodactylRequests extends HttpExecute {
      * @throws AllocationAlreadyUsed if ...
      */
     public static int setupAllocation(int port) throws AllocationAlreadyUsed, HostExecuteException {
-        // TODO: 07/05/2022 Create allocation and return allocation id
         String ip = "127.0.0.1";
         String node = Main.getFileConfig().getString("host.pterodactyl.node");
 
@@ -104,15 +100,18 @@ public class PterodactylRequests extends HttpExecute {
     private static int retrieveAllocation(String ip, int port, String node) throws AllocationAlreadyUsed {
         try {
             JSONObject allocations = execute(new URL(ENDPOINT + "/api/application/nodes/" + node + "/allocations"),
-                    "POST", KEY, "");
-            for (Object loop : allocations.getJSONArray("data")) {
-                JSONObject jsonAllocation = new JSONObject(loop);
-                if (jsonAllocation.getString("attributes.ip").equalsIgnoreCase(ip) &&
-                        jsonAllocation.getInt("attributes.port") == port) {
-                    if (jsonAllocation.getBoolean("attributes.assigned")) {
-                        throw new AllocationAlreadyUsed(new Throwable("Port already assign"));
+                    "GET", KEY, null);
+            JSONArray getData = allocations.getJSONArray("data");
+            for (int i = 0; i < getData.length(); i++) {
+                JSONObject jsonAllocation = getData.getJSONObject(i);
+                if (jsonAllocation.has("attributes")) {
+                    JSONObject attributes = jsonAllocation.getJSONObject("attributes");
+                    if (attributes.getString("ip").equalsIgnoreCase(ip) && attributes.getInt("port") == port) {
+                        if (attributes.getBoolean("assigned")) {
+                            throw new AllocationAlreadyUsed(new Throwable("Port already assign"));
+                        }
+                        return attributes.getInt("id");
                     }
-                    return jsonAllocation.getInt("attributes.id");
                 }
             }
             return 0;

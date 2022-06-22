@@ -17,11 +17,9 @@ host:
     # List of bungee server name considered as lobby servers
     lobby-name:
     - lobby
+  # Port list (You should put 1 port per instance)
+  ports: [25565, 25566]
   provider: pterodactyl
-  # Host limits, 0 to set unlimited (BE CAREFUL WITH THESE PARAMETER !!)
-  capacity:
-    instances: 2
-    memory: 0
   # Do not modify if you don't know how it's work
   command: "java -Xms{MEM}M -Xmx{MEM}M 
     -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions 
@@ -44,8 +42,8 @@ host:
       # This key can be generate in : https://your.panel.url/account/api
       key: "owner-key"
     # Base egg id, should be an empty egg (If you don't know how to use this part, contact plugin author)
-    egg: 1
+    egg: "1"
     # id of the egg nest
-    nest: 1
+    nest: "1"
     # id of the pterodactyl node
-    node: 1
+    node: "1"
