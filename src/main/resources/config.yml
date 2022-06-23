@@ -1,7 +1,7 @@
 # Debug mode
 debug: false
 # Storage system (Only mysql is supported for now)
-database:
+storage:
   type: mysql
   mysql:
     prefix: "host_"

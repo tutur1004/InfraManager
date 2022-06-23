@@ -8,10 +8,8 @@ import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
 import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.*;
 import java.util.Date;
 import java.util.*;
@@ -22,9 +20,8 @@ import java.util.stream.Collectors;
 public class MySQLAdapter implements StorageExecutor {
     private final String SCHEMA_FILE = "host_schema.sql";
     private final long CACHE_DURATION = TimeUnit.MILLISECONDS.convert(30L, TimeUnit.MINUTES);
-    private final Configuration CONFIG;
     private final MySQLPool DB;
-    private final String PREFIX = Main.getFileConfig().getString("database.mysql.prefix");
+    private final String PREFIX = Main.getFileConfig().getString("storage.mysql.prefix");
     private final List<String> TABLES = Arrays.asList(PREFIX + "games", PREFIX + "instances", PREFIX + "logs", PREFIX + "users");
     private Date CACHED_GAMES_REFRESH = null;
     private List<Game> CACHED_GAMES = new ArrayList<>();
@@ -86,18 +83,17 @@ public class MySQLAdapter implements StorageExecutor {
     }
 
     public MySQLAdapter(Configuration config) throws StorageLoaderException {
-        this.CONFIG = config;
         DB = new MySQLPool(config);
-        /*
-        try {
-            applySchema();
-        } catch (SQLException | IOException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
+        if (!checkStorages()) {
+            try {
+                applySchema();
+            } catch (SQLException | IOException throwable) {
+                if (Main.DEBUG) {
+                    throwable.printStackTrace();
+                }
+                throw new StorageLoaderException("Unsupported database type");
             }
-            throw new StorageLoaderException("Unsupported database type");
         }
-        */
     }
 
     /**
@@ -112,27 +108,27 @@ public class MySQLAdapter implements StorageExecutor {
      * Apply SQL Default schema with host_schema.sql dump
      */
     private void applySchema() throws SQLException, IOException, StorageLoaderException {
+        List<String> statements;
         //  Read schema file
         try (InputStream schemaFileIS = this.getClass().getResourceAsStream(SCHEMA_FILE)) {
-            if (schemaFileIS==null) {
+            if (schemaFileIS == null) {
                 throw new StorageLoaderException("Missing schema file");
-            } else {
-                //  Apply Schema
-                try (Connection connection = DB.getConnection();
-                     InputStreamReader streamFile = new InputStreamReader(schemaFileIS);
-                     BufferedReader bufferedReader = new BufferedReader(streamFile)) {
-                    connection.setAutoCommit(false);
-                    PreparedStatement q = connection.prepareStatement(bufferedReader.lines()
-                            .filter(line -> !line.startsWith("--"))
-                            .collect(Collectors.joining("\n"))
-                            .replaceAll("\\{prefix}", CONFIG.getString("database.mysql.prefix")));
-                    q.execute();
-                    connection.setAutoCommit(true);
-                } catch (Exception throwable) {
-                    if (!throwable.getMessage().contains("already exists") && Main.DEBUG) {
-                        throwable.printStackTrace();
-                    }
-                }
+            }
+            statements = Utils.getQueries(schemaFileIS).stream()
+                    .map(this::formatQuery)
+                    .collect(Collectors.toList());
+        }
+        //  Apply Schema
+        try (Connection connection = DB.getConnection();
+                Statement s = connection.createStatement()) {
+            connection.setAutoCommit(false);
+            for (String query : statements) {
+                s.addBatch(query);
+            }
+            s.executeBatch();
+        } catch (Exception throwable) {
+            if (!throwable.getMessage().contains("already exists") && Main.DEBUG) {
+                throwable.printStackTrace();
             }
         }
     }
@@ -249,7 +245,7 @@ public class MySQLAdapter implements StorageExecutor {
     @Override
     public List<Game> getGamesCached() throws StorageExecuteException {
         if (CACHED_GAMES_REFRESH.getTime() + CACHE_DURATION < new Date().getTime()) {
-            this.getGames();
+            CACHED_GAMES = getGames();
         }
         return CACHED_GAMES;
     }

@@ -12,19 +12,19 @@ public class MySQLPool {
 
     public MySQLPool(Configuration config) {
         HikariConfig hConfig = new HikariConfig();
-        if (config.getString("database.type").equalsIgnoreCase("mysql")) {
+        if (config.getString("storage.type").equalsIgnoreCase("mysql")) {
             hConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
             hConfig.setJdbcUrl( "jdbc:mysql://" +
-                    config.getString("database.mysql.hostname") + "/" +
-                    config.getString("database.mysql.database"));
-        } else if (config.getString("database.type").equalsIgnoreCase("mariadb")) {
+                    config.getString("storage.mysql.hostname") + "/" +
+                    config.getString("storage.mysql.database"));
+        } else if (config.getString("storage.type").equalsIgnoreCase("mariadb")) {
             hConfig.setDriverClassName("org.mariadb.jdbc.Driver");
             hConfig.setJdbcUrl( "jdbc:mariadb://" +
-                    config.getString("database.mysql.hostname") + "/" +
-                    config.getString("database.mysql.database"));
+                    config.getString("storage.mysql.hostname") + "/" +
+                    config.getString("storage.mysql.database"));
         }
-        hConfig.setUsername(config.getString("database.mysql.username"));
-        hConfig.setPassword(config.getString("database.mysql.password"));
+        hConfig.setUsername(config.getString("storage.mysql.username"));
+        hConfig.setPassword(config.getString("storage.mysql.password"));
         hConfig.addDataSourceProperty("cachePrepStmts", "true");
         hConfig.addDataSourceProperty("prepStmtCacheSize", "250");
         hConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");

@@ -54,7 +54,7 @@ public class Main extends Plugin {
         try {
             LOADED_HOSTS_MANAGER = new HostsManager(this, configFile);
             if (DEBUG) {
-                getHostLogger().info("Storage enable, API is now available");
+                getHostLogger().info("Host manager enable, hosts are now available");
             }
         } catch (HostExecuteException throwable) {
             getHostLogger().warning("Host provider load failed, disabling plugin..");
