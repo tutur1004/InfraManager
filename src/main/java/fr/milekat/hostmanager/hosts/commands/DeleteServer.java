@@ -19,6 +19,7 @@ public class DeleteServer extends Command {
     @Override
     public void execute(CommandSender sender, String[] args) {
         try {
+            sender.sendMessage(new TextComponent("Trying to delete server..."));
             if (args.length==1) {
                 try {
                     Instance instance = Main.getStorage().getInstance(args[0]);
@@ -26,9 +27,14 @@ public class DeleteServer extends Command {
                         sender.sendMessage(new TextComponent("§cServer not found."));
                         return;
                     }
+                    sender.sendMessage(new TextComponent("Server id: " + instance.getServerId()));
                     Main.getHosts().deleteServer(instance);
-                } catch (StorageExecuteException e) {
+                    sender.sendMessage(new TextComponent("Server deleted."));
+                } catch (StorageExecuteException exception) {
                     sender.sendMessage(new TextComponent("§cStorage error."));
+                    if (Main.DEBUG) {
+                        exception.printStackTrace();
+                    }
                 }
             } else {
                 sender.sendMessage(new TextComponent("§c/host-admin-delete <server name>"));

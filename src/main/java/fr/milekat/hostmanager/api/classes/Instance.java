@@ -4,7 +4,7 @@ import java.util.Date;
 
 public class Instance {
     private final Integer id;
-    private final String name;
+    private String name;
     private final String description;
     private String serverId;
     private int port;
@@ -50,6 +50,10 @@ public class Instance {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDescription() {

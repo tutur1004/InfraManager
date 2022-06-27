@@ -61,9 +61,6 @@ public class PterodactylAdapter implements HostExecutor {
      */
     @Override
     public void createServer(Instance instance) throws HostExecuteException, StorageExecuteException {
-
-        // TODO: 23/06/2022 Check if this player is not currently having a instance with this name
-
         if (instance.getPort()==0) {
             Integer port = getAvailablePort();
             if (port!=null) {
@@ -76,10 +73,15 @@ public class PterodactylAdapter implements HostExecutor {
 
         JSONObject server = PterodactylRequests.setupServer(instance);
 
+        // TODO: 28/06/2022 Add manager accounts
+        //  (Multi levels of permissions ? Reader, Writer, Admin ?)
+
+        instance.setState(InstanceState.CREATING);
+
         if (server.has("attributes")) {
             JSONObject attributes = server.getJSONObject("attributes");
             instance.setServerId(String.valueOf(attributes.getInt("id")));
-            instance.setState(InstanceState.CREATING);
+            instance.setName(instance.getName() + "_" + instance.getServerId());
             try {
                 instance.setCreation(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
                         .parse(attributes.getString("created_at")
@@ -99,7 +101,7 @@ public class PterodactylAdapter implements HostExecutor {
 
         Main.getStorage().createInstance(instance);
 
-        ServerManager.addServer(instance.getName(), instance.getPort());
+        ServerManager.addServer(Main.HOST_BUNGEE_SERVER_PREFIX + instance.getName(), instance.getPort());
 
         ServerCreatedEvent event = new ServerCreatedEvent(instance);
         ProxyServer.getInstance().getPluginManager().callEvent(event);
@@ -107,12 +109,36 @@ public class PterodactylAdapter implements HostExecutor {
 
     @Override
     public void deleteServer(Instance instance) throws HostExecuteException {
+        try {
+            if (Main.getStorage().getActiveInstances()
+                    .stream()
+                    .noneMatch(o -> o.getServerId().equalsIgnoreCase(instance.getServerId()))
+            ) {
+                return;
+            }
+        } catch (StorageExecuteException e) {
+            if (Main.DEBUG) {
+                Main.getHostLogger().warning("Trying to delete an invalid or inactive server");
+            }
+            return;
+        }
+
         ServerDeletionEvent deletionEvent = new ServerDeletionEvent(instance);
         ProxyServer.getInstance().getPluginManager().callEvent(deletionEvent);
         if (deletionEvent.isCancelled()) return;
 
         PterodactylRequests.deleteServer(instance);
+        ServerManager.removeServer(Main.HOST_BUNGEE_SERVER_PREFIX + instance.getName());
 
+        try {
+            instance.setState(InstanceState.TERMINATED);
+            Main.getStorage().updateInstance(instance);
+        } catch (StorageExecuteException e) {
+            if (Main.DEBUG) {
+                e.printStackTrace();
+            }
+            throw new HostExecuteException(e, "Can't update storage after server deletion");
+        }
         ServerDeletedEvent deletedEvent = new ServerDeletedEvent(instance);
         ProxyServer.getInstance().getPluginManager().callEvent(deletedEvent);
     }

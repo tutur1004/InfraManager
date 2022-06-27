@@ -52,6 +52,7 @@ public class HttpExecute {
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }
+                if (response.length()==0) return new JSONObject();
                 return new JSONObject(response.toString());
             } catch (IOException exception) {
                 if (Main.DEBUG) {
