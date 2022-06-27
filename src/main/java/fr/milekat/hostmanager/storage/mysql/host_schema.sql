@@ -19,7 +19,7 @@ CREATE INDEX `{prefix}game_id` ON `{prefix}games` (`game_name`);
 
 CREATE TABLE `{prefix}instances` (
   `instance_id` tinyint(3) UNSIGNED NOT NULL,
-  `instance_name` varchar(32) NOT NULL COMMENT 'Instance name',
+  `instance_name` varchar(64) NOT NULL COMMENT 'Instance name',
   `instance_description` varchar(128) NOT NULL COMMENT 'Instance description',
   `instance_server_id` varchar(36) DEFAULT NULL COMMENT 'Id of instance server',
   `port` smallint(5) NOT NULL COMMENT 'Instance port',
