@@ -81,7 +81,7 @@ public class PterodactylAdapter implements HostExecutor {
         if (server.has("attributes")) {
             JSONObject attributes = server.getJSONObject("attributes");
             instance.setServerId(String.valueOf(attributes.getInt("id")));
-            instance.setName(instance.getName() + "_" + instance.getServerId());
+            instance.setName(instance.getName() + "_#" + instance.getServerId());
             try {
                 instance.setCreation(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss")
                         .parse(attributes.getString("created_at")

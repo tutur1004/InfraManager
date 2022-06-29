@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 public class PterodactylRequests extends HttpExecute {
     private static final String ENDPOINT = Main.getFileConfig().getString("host.pterodactyl.endpoint");
@@ -20,6 +21,13 @@ public class PterodactylRequests extends HttpExecute {
      */
     public static JSONObject setupServer(Instance instance) throws HostExecuteException {
         try {
+            JSONObject envVars = new JSONObject();
+            envVars.put(Main.HOST_UUID_ENV_VAR_NAME, instance.getHost().getUuid());
+            envVars.put("CONFIG", instance.getGame().getConfigs().keySet()
+                    .stream()
+                    .map(key -> key + "=" + instance.getGame().getConfigs().get(key))
+                    .collect(Collectors.joining(";")));
+            Main.getHostLogger().info(envVars.toString());
             return execute(new URL(ENDPOINT + "/api/application/servers"), "POST", KEY,
                     new JSONObject().put("name", instance.getName())
                             .put("description", instance.getDescription())
@@ -28,8 +36,7 @@ public class PterodactylRequests extends HttpExecute {
                             .put("docker_image", instance.getGame().getImage())
                             .put("startup", Main.getFileConfig().getString("host.command")
                                     .replaceAll("\\{MEM}", String.valueOf(instance.getGame().getRequirements())))
-                            .put("environment", new JSONObject()
-                                    .put(Main.HOST_UUID_ENV_VAR_NAME, instance.getHost().getUuid()))
+                            .put("environment", envVars)
                             .put("limits", new JSONObject().put("memory", instance.getGame().getRequirements())
                                     .put("swap", 0).put("disk", 1024).put("io", 500).put("cpu", 0))
                             .put("feature_limits", new JSONObject().put("databases", 0).put("backups", 0))

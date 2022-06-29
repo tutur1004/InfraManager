@@ -12,7 +12,7 @@ public class Instance {
     private final Game game;
     private final User host;
     private Date creation;
-    private Date deletion;
+    private Date deletion = null;
 
     public Instance(String name, String serverId) {
         this.id = null;

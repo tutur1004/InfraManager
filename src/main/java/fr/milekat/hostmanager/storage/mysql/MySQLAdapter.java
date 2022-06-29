@@ -590,6 +590,11 @@ public class MySQLAdapter implements StorageExecutor {
      * Shortcut to convert MySQL game row into game class
      */
     private Game resultSetToGame(ResultSet r) throws SQLException {
+        Map<String, String> envVars = new HashMap<>();
+        Arrays.stream(r.getString("configs").split(";")).forEach(var -> {
+            String[] splitKeyValue = var.split("=", 2);
+            if (splitKeyValue.length==2) envVars.put(splitKeyValue[0], splitKeyValue[1]);
+        });
         return new Game(r.getInt("game_id"),
                 r.getString("game_name"),
                 new Date(r.getTimestamp("create_date").getTime()),
@@ -597,7 +602,8 @@ public class MySQLAdapter implements StorageExecutor {
                 r.getString("game_version"),
                 r.getString("server_version"),
                 r.getString("image"),
-                r.getInt("requirements"));
+                r.getInt("requirements"),
+                envVars);
     }
 
     /**

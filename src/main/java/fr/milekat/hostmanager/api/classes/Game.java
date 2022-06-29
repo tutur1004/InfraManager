@@ -1,8 +1,7 @@
 package fr.milekat.hostmanager.api.classes;
 
-import net.md_5.bungee.api.ProxyServer;
-
 import java.util.Date;
+import java.util.Map;
 
 public class Game {
     private final Integer id;
@@ -13,19 +12,10 @@ public class Game {
     private final String serverVersion;
     private final String image;
     private final int requirements;
+    private final Map<String, String> configs;
 
-    public Game(String name, boolean enable, String image, int requirements) {
-        this.id = null;
-        this.name = name;
-        this.create = new Date();
-        this.enable = enable;
-        this.gameVersion = null;
-        this.serverVersion = ProxyServer.getInstance().getVersion();
-        this.image = image;
-        this.requirements = requirements;
-    }
-
-    public Game(Integer id, String name, Date create, boolean enable, String gameVersion, String serverVersion, String image, int requirements) {
+    public Game(Integer id, String name, Date create, boolean enable, String gameVersion, String serverVersion,
+                String image, int requirements, Map<String, String> configs) {
         this.id = id;
         this.name = name;
         this.create = create;
@@ -34,6 +24,7 @@ public class Game {
         this.serverVersion = serverVersion;
         this.image = image;
         this.requirements = requirements;
+        this.configs = configs;
     }
 
     public Integer getId() {
@@ -66,5 +57,9 @@ public class Game {
 
     public int getRequirements() {
         return requirements;
+    }
+
+    public Map<String, String> getConfigs() {
+        return configs;
     }
 }
