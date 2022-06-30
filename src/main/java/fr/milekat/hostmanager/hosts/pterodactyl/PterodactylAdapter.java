@@ -30,8 +30,8 @@ public class PterodactylAdapter implements HostExecutor {
         //  try {
         //  Check if account api key is valid
         //  getAccount().retrieveAccount().execute();
-        //  } catch (LoginException throwable) {
-        //      throw new HostExecuteException(throwable, "Account API key is incorrect");
+        //  } catch (LoginException exception) {
+        //      throw new HostExecuteException(exception, "Account API key is incorrect");
         //  }
         //  try {
         //      //  Check if admin key has all needed permissions
@@ -48,8 +48,8 @@ public class PterodactylAdapter implements HostExecutor {
         //              .put("nest", Main.getFileConfig().getString("host.pterodactyl.nest")), null);
         //      this.owner = new ApplicationUserImpl(new JSONObject()
         //              .put("id", Main.getFileConfig().getString("host.pterodactyl.account.id")), null);
-        //  } catch (LoginException throwable) {
-        //      throw new HostExecuteException(throwable,
+        //  } catch (LoginException exception) {
+        //      throw new HostExecuteException(exception,
         //              "Admin API key is incorrect or doesn't have the required permissions");
         //  }
         return true;
@@ -134,9 +134,6 @@ public class PterodactylAdapter implements HostExecutor {
             instance.setState(InstanceState.TERMINATED);
             Main.getStorage().updateInstance(instance);
         } catch (StorageExecuteException e) {
-            if (Main.DEBUG) {
-                e.printStackTrace();
-            }
             throw new HostExecuteException(e, "Can't update storage after server deletion");
         }
         ServerDeletedEvent deletedEvent = new ServerDeletedEvent(instance);

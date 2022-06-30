@@ -1,5 +1,7 @@
 package fr.milekat.hostmanager.hosts.exeptions;
 
+import fr.milekat.hostmanager.Main;
+
 public class HostExecuteException extends Exception {
     private final String message;
 
@@ -13,9 +15,12 @@ public class HostExecuteException extends Exception {
     /**
      * Issue during a host execution
      */
-    public HostExecuteException(Throwable throwable, String message) {
-        super(throwable);
+    public HostExecuteException(Throwable exception, String message) {
+        super(exception);
         this.message = message;
+        if (Main.DEBUG) {
+            exception.printStackTrace();
+        }
     }
 
     /**

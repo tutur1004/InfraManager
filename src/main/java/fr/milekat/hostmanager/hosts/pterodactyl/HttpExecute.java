@@ -39,7 +39,6 @@ public class HttpExecute {
                         Main.getHostLogger().warning("RequestMethod: " + method);
                         Main.getHostLogger().warning("Bearer: " + key);
                         Main.getHostLogger().warning("Body: " + body);
-                        exception.printStackTrace();
                     }
                     throw new HostExecuteException(exception, "Pterodactyl API call error, during output writing, URL: " + url);
                 }
@@ -60,7 +59,6 @@ public class HttpExecute {
                     Main.getHostLogger().warning("RequestMethod: " + method);
                     Main.getHostLogger().warning("Bearer: " + key);
                     Main.getHostLogger().warning("Body: " + body);
-                    exception.printStackTrace();
                 }
                 throw new HostExecuteException(exception,
                         "Pterodactyl API call error, during request read, URL: " + url);
@@ -71,7 +69,6 @@ public class HttpExecute {
                 Main.getHostLogger().warning("RequestMethod: " + method);
                 Main.getHostLogger().warning("Bearer: " + key);
                 Main.getHostLogger().warning("Body: " + body);
-                exception.printStackTrace();
             }
             throw new HostExecuteException(exception, "Pterodactyl API call error during request, URL: " + url);
         }

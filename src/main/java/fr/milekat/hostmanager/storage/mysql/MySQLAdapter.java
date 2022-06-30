@@ -6,6 +6,8 @@ import fr.milekat.hostmanager.storage.StorageExecutor;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
 import net.md_5.bungee.config.Configuration;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -69,32 +71,26 @@ public class MySQLAdapter implements StorageExecutor {
 
     private final String UPDATE_GAME = "UPDATE {prefix}games " +
             "SET name=?, enable=?, image=?, requirements=?";
-    // TODO: 23/06/2022 Get instance by id ? As the name is not unique..
     private final String UPDATE_INSTANCE = "UPDATE {prefix}instances " +
             "SET instance_server_id=?, state=?, game=?, user=? " +
-            "WHERE instance_name = ?";
-    private final String UNLINK_INSTANCE = "UPDATE {prefix}instances " +
-            "SET instance_server_id=NULL, state=0, game=NULL, user=NULL " +
             "WHERE instance_name = ?";
 
     /**
      * Format query by replacing {prefix} with {@link MySQLAdapter#PREFIX}
      */
-    private String formatQuery(String query) {
+    @Contract(pure = true)
+    private @NotNull String formatQuery(@NotNull String query) {
         return query.replaceAll("\\{prefix}", PREFIX);
     }
 
     public MySQLAdapter(Configuration config) throws StorageLoaderException {
         DB = new MySQLPool(config);
-        if (!checkStorages()) {
-            try {
+        try {
+            if (!checkStorages()) {
                 applySchema();
-            } catch (SQLException | IOException throwable) {
-                if (Main.DEBUG) {
-                    throwable.printStackTrace();
-                }
-                throw new StorageLoaderException("Unsupported database type");
             }
+        } catch (StorageExecuteException | IOException exception) {
+            throw new StorageLoaderException("Unsupported database type");
         }
     }
 
@@ -109,7 +105,7 @@ public class MySQLAdapter implements StorageExecutor {
     /**
      * Apply SQL Default schema with host_schema.sql dump
      */
-    private void applySchema() throws SQLException, IOException, StorageLoaderException {
+    private void applySchema() throws IOException, StorageLoaderException {
         List<String> statements;
         //  Read schema file
         try (InputStream schemaFileIS = this.getClass().getResourceAsStream(SCHEMA_FILE)) {
@@ -128,9 +124,9 @@ public class MySQLAdapter implements StorageExecutor {
                 s.addBatch(query);
             }
             s.executeBatch();
-        } catch (Exception throwable) {
-            if (!throwable.getMessage().contains("already exists") && Main.DEBUG) {
-                throwable.printStackTrace();
+        } catch (Exception exception) {
+            if (!exception.getMessage().contains("already exists") && Main.DEBUG) {
+                exception.printStackTrace();
             }
         }
     }
@@ -140,7 +136,7 @@ public class MySQLAdapter implements StorageExecutor {
      * @return true if all tables are created
      */
     @Override
-    public boolean checkStorages() {
+    public boolean checkStorages() throws StorageExecuteException {
         try (Connection connection = DB.getConnection()) {
             for (String table : TABLES) {
                 try (PreparedStatement q = connection.prepareStatement(formatQuery(CHECK_TABLE))) {
@@ -155,11 +151,8 @@ public class MySQLAdapter implements StorageExecutor {
                 }
             }
             return true;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            return false;
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, "Missing schema file");
         }
     }
 
@@ -173,7 +166,7 @@ public class MySQLAdapter implements StorageExecutor {
      * @return amount of reaming ticket
      */
     @Override
-    public Integer getTicket(UUID uuid) throws StorageExecuteException {
+    public Integer getTicket(@NotNull UUID uuid) throws StorageExecuteException {
         try (Connection connection = DB.getConnection();
              PreparedStatement q = connection.prepareStatement(formatQuery(GET_TICKETS))) {
             q.setString(1, uuid.toString());
@@ -182,11 +175,8 @@ public class MySQLAdapter implements StorageExecutor {
                 return q.getResultSet().getInt("tickets");
             }
             return 0;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -232,11 +222,8 @@ public class MySQLAdapter implements StorageExecutor {
             CACHED_GAMES = games;
             CACHED_GAMES_REFRESH = new Date();
             return games;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -265,11 +252,8 @@ public class MySQLAdapter implements StorageExecutor {
             if (q.getResultSet().next()) {
                 return resultSetToGame(q.getResultSet());
             } else return null;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -289,7 +273,7 @@ public class MySQLAdapter implements StorageExecutor {
         gameQuery(game, UPDATE_GAME);
     }
 
-    private void gameQuery(Game game, String query) throws StorageExecuteException {
+    private void gameQuery(@NotNull Game game, String query) throws StorageExecuteException {
         try (Connection connection = DB.getConnection();
              PreparedStatement q = connection.prepareStatement(formatQuery(query))) {
             q.setString(1, game.getName());
@@ -297,11 +281,8 @@ public class MySQLAdapter implements StorageExecutor {
             q.setString(3, game.getImage());
             q.setInt(4, game.getRequirements());
             q.execute();
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -323,11 +304,8 @@ public class MySQLAdapter implements StorageExecutor {
                 instances.add(resultSetToInstance(q.getResultSet()));
             }
             return instances;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -345,16 +323,13 @@ public class MySQLAdapter implements StorageExecutor {
             if (q.getResultSet().next()) {
                 return resultSetToInstance(q.getResultSet());
             } else return null;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
     @Override
-    public void createInstance(Instance instance) throws StorageExecuteException {
+    public void createInstance(@NotNull Instance instance) throws StorageExecuteException {
         try (Connection connection = DB.getConnection();
              PreparedStatement q = connection.prepareStatement(formatQuery(CREATE_INSTANCE))) {
             q.setString(1, instance.getName());
@@ -366,16 +341,13 @@ public class MySQLAdapter implements StorageExecutor {
             q.setInt(7, instance.getHost().getId());
             q.setTimestamp(8, new Timestamp(instance.getCreation().getTime()));
             q.execute();
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
     @Override
-    public void updateInstance(Instance instance) throws StorageExecuteException {
+    public void updateInstance(@NotNull Instance instance) throws StorageExecuteException {
         try (Connection connection = DB.getConnection();
              PreparedStatement q = connection.prepareStatement(formatQuery(UPDATE_INSTANCE))) {
             q.setString(1, instance.getServerId());
@@ -384,25 +356,8 @@ public class MySQLAdapter implements StorageExecutor {
             q.setInt(4, instance.getHost().getId());
             q.setString(5, instance.getName());
             q.execute();
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
-        }
-    }
-
-    @Override
-    public void unlinkInstance(Instance instance) throws StorageExecuteException {
-        try (Connection connection = DB.getConnection();
-             PreparedStatement q = connection.prepareStatement(formatQuery(UNLINK_INSTANCE))) {
-            q.setString(1, instance.getName());
-            q.execute();
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -421,11 +376,8 @@ public class MySQLAdapter implements StorageExecutor {
                 }
             }
             return null;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -446,11 +398,8 @@ public class MySQLAdapter implements StorageExecutor {
                 games.add(resultSetToUser(q.getResultSet()));
             }
             return games;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -468,11 +417,8 @@ public class MySQLAdapter implements StorageExecutor {
             if (q.getResultSet().next()) {
                 return resultSetToUser(q.getResultSet());
             } else return null;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -482,7 +428,7 @@ public class MySQLAdapter implements StorageExecutor {
      * @return User or null
      */
     @Override
-    public @Nullable User getUser(UUID uuid) throws StorageExecuteException {
+    public @Nullable User getUser(@NotNull UUID uuid) throws StorageExecuteException {
         try (Connection connection = DB.getConnection();
              PreparedStatement q = connection.prepareStatement(formatQuery(GET_USER_UUID))) {
             q.setString(1, uuid.toString());
@@ -490,15 +436,12 @@ public class MySQLAdapter implements StorageExecutor {
             if (q.getResultSet().next()) {
                 return resultSetToUser(q.getResultSet());
             } else return null;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
-    private void updateUser(UUID uuid, String username, Integer amount, String query) throws StorageExecuteException {
+    private void updateUser(@NotNull UUID uuid, String username, Integer amount, String query) throws StorageExecuteException {
         try (Connection connection = DB.getConnection();
              PreparedStatement q = connection.prepareStatement(formatQuery(query))) {
             q.setString(1, uuid.toString());
@@ -507,11 +450,8 @@ public class MySQLAdapter implements StorageExecutor {
             q.setString(4, username);
             q.setInt(5, amount);
             q.execute();
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -533,11 +473,8 @@ public class MySQLAdapter implements StorageExecutor {
                 logs.add(resultSetToLog(q.getResultSet()));
             }
             return logs;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -547,7 +484,7 @@ public class MySQLAdapter implements StorageExecutor {
      * @param to end of the period
      */
     @Override
-    public List<Log> getLogs(Date from, Date to) throws StorageExecuteException {
+    public List<Log> getLogs(@NotNull Date from, @NotNull Date to) throws StorageExecuteException {
         try (Connection connection = DB.getConnection();
              PreparedStatement q = connection.prepareStatement(formatQuery(GET_LOGS_WITHIN_DATE))) {
             q.setTimestamp(1, new Timestamp(from.getTime()));
@@ -558,11 +495,8 @@ public class MySQLAdapter implements StorageExecutor {
                 logs.add(resultSetToLog(q.getResultSet()));
             }
             return logs;
-        } catch (SQLException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new StorageExecuteException(throwable.getCause(), throwable.getSQLState());
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
         }
     }
 
@@ -572,7 +506,8 @@ public class MySQLAdapter implements StorageExecutor {
     /**
      * Shortcut to convert MySQL instance row into instance class
      */
-    private Instance resultSetToInstance(ResultSet r) throws SQLException {
+    @Contract("_ -> new")
+    private @NotNull Instance resultSetToInstance(@NotNull ResultSet r) throws SQLException {
         return new Instance(r.getInt("instance_id"),
                 r.getString("instance_name"),
                 r.getString("instance_description"),
@@ -589,7 +524,8 @@ public class MySQLAdapter implements StorageExecutor {
     /**
      * Shortcut to convert MySQL game row into game class
      */
-    private Game resultSetToGame(ResultSet r) throws SQLException {
+    @Contract("_ -> new")
+    private @NotNull Game resultSetToGame(@NotNull ResultSet r) throws SQLException {
         Map<String, String> envVars = new HashMap<>();
         Arrays.stream(r.getString("configs").split(";")).forEach(var -> {
             String[] splitKeyValue = var.split("=", 2);
@@ -609,7 +545,8 @@ public class MySQLAdapter implements StorageExecutor {
     /**
      * Shortcut to convert MySQL log row into log class
      */
-    private Log resultSetToLog(ResultSet r) throws SQLException {
+    @Contract("_ -> new")
+    private @NotNull Log resultSetToLog(@NotNull ResultSet r) throws SQLException {
         return new Log(new Date(r.getTimestamp("log_date").getTime()),
                 resultSetToInstance(r),
                 LogAction.fromInteger(r.getInt("action")),
@@ -620,7 +557,8 @@ public class MySQLAdapter implements StorageExecutor {
     /**
      * Shortcut to convert MySQL user row into user class
      */
-    private User resultSetToUser(ResultSet r) throws SQLException {
+    @Contract("_ -> new")
+    private @NotNull User resultSetToUser(@NotNull ResultSet r) throws SQLException {
         return new User(r.getInt("user_id"),
                 UUID.fromString(r.getString("uuid")),
                 r.getString("last_name"),

@@ -21,7 +21,7 @@ public interface StorageExecutor {
      * Check if all storages are loaded
      * @return true if all storages are loaded
      */
-    boolean checkStorages();
+    boolean checkStorages() throws StorageExecuteException;
 
     /*
         Tickets
@@ -109,11 +109,6 @@ public interface StorageExecutor {
      * Save an instance
      */
     void updateInstance(Instance instance) throws StorageExecuteException;
-
-    /**
-     *
-     */
-    void unlinkInstance(Instance instance) throws StorageExecuteException;
 
     /**
      * Find an available port in given list

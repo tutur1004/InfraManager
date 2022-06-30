@@ -43,13 +43,13 @@ public class Main extends Plugin {
             if (DEBUG) {
                 getHostLogger().info("Storage enable, API is now available");
             }
-        } catch (StorageLoaderException throwable) {
+        } catch (StorageLoaderException exception) {
             getHostLogger().warning("Storage load failed, disabling plugin..");
             this.onDisable();
             if (DEBUG) {
-                throwable.printStackTrace();
+                exception.printStackTrace();
             } else {
-                getHostLogger().warning("Error: " + throwable.getLocalizedMessage());
+                getHostLogger().warning("Error: " + exception.getLocalizedMessage());
             }
         }
         try {
@@ -57,13 +57,13 @@ public class Main extends Plugin {
             if (DEBUG) {
                 getHostLogger().info("Host manager enable, hosts are now available");
             }
-        } catch (HostExecuteException throwable) {
+        } catch (HostExecuteException exception) {
             getHostLogger().warning("Host provider load failed, disabling plugin..");
             this.onDisable();
             if (DEBUG) {
-                throwable.printStackTrace();
+                exception.printStackTrace();
             } else {
-                getHostLogger().warning("Error: " + throwable.getLocalizedMessage());
+                getHostLogger().warning("Error: " + exception.getLocalizedMessage());
             }
         }
     }

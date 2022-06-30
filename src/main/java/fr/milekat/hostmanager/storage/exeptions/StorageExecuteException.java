@@ -1,20 +1,25 @@
 package fr.milekat.hostmanager.storage.exeptions;
 
+import fr.milekat.hostmanager.Main;
+
 public class StorageExecuteException extends Exception {
-    private final String executeState;
+    private final String message;
 
     /**
      * Issue during a storage execution
      */
-    public StorageExecuteException(Throwable throwable, String executeState) {
-        super(throwable);
-        this.executeState = executeState;
+    public StorageExecuteException(Throwable exception, String message) {
+        super(exception);
+        this.message = message;
+        if (Main.DEBUG) {
+            exception.printStackTrace();
+        }
     }
 
     /**
-     * Get Execute State (If exist)
+     * Get error message (If exist)
      */
-    public String getExecuteState() {
-        return executeState;
+    public String getMessage() {
+        return message;
     }
 }

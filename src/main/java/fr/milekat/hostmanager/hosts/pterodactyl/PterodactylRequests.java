@@ -27,7 +27,6 @@ public class PterodactylRequests extends HttpExecute {
                     .stream()
                     .map(key -> key + "=" + instance.getGame().getConfigs().get(key))
                     .collect(Collectors.joining(";")));
-            Main.getHostLogger().info(envVars.toString());
             return execute(new URL(ENDPOINT + "/api/application/servers"), "POST", KEY,
                     new JSONObject().put("name", instance.getName())
                             .put("description", instance.getDescription())
@@ -43,16 +42,10 @@ public class PterodactylRequests extends HttpExecute {
                             .put("allocation", new JSONObject().put("default", setupAllocation(instance.getPort())))
                             .put("start_on_completion", true)
                             .toString());
-        } catch (IOException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new HostExecuteException(throwable, "Pterodactyl API error, URL IOException ?");
-        } catch (AllocationAlreadyUsed throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new HostExecuteException(throwable, "Pterodactyl API error, allocation port already used.");
+        } catch (IOException exception) {
+            throw new HostExecuteException(exception, "Pterodactyl API error, URL IOException ?");
+        } catch (AllocationAlreadyUsed exception) {
+            throw new HostExecuteException(exception, "Pterodactyl API error, allocation port already used.");
         }
     }
 
@@ -64,11 +57,8 @@ public class PterodactylRequests extends HttpExecute {
         try {
             execute(new URL(ENDPOINT + "/api/application/servers/" + instance.getServerId() + "/force"),
                     "DELETE", KEY, null);
-        } catch (IOException throwable) {
-            if (Main.DEBUG) {
-                throwable.printStackTrace();
-            }
-            throw new HostExecuteException(throwable, "Pterodactyl API error, URL IOException ?");
+        } catch (IOException exception) {
+            throw new HostExecuteException(exception, "Pterodactyl API error, URL IOException ?");
         }
     }
 
@@ -91,8 +81,8 @@ public class PterodactylRequests extends HttpExecute {
             execute(new URL(ENDPOINT + "/api/application/nodes/" + node + "/allocations"), "POST", KEY,
                 new JSONObject().put("ip", ip).put("ports", Collections.singleton(port)).toString());
             return retrieveAllocation(ip, port, node);
-        } catch (IOException throwable) {
-            throw new AllocationAlreadyUsed(throwable); // TODO: 24/05/2022 Check this point
+        } catch (IOException exception) {
+            throw new AllocationAlreadyUsed(exception); // TODO: 24/05/2022 Check this point
         }
     }
 
@@ -122,14 +112,14 @@ public class PterodactylRequests extends HttpExecute {
                 }
             }
             return 0;
-        } catch (HostExecuteException | IOException throwable) {
-            throw new AllocationAlreadyUsed(throwable);
+        } catch (HostExecuteException | IOException exception) {
+            throw new AllocationAlreadyUsed(exception);
         }
     }
 
     private static class AllocationAlreadyUsed extends Exception {
-        public AllocationAlreadyUsed(Throwable throwable) {
-            super(throwable);
+        public AllocationAlreadyUsed(Throwable exception) {
+            super(exception);
         }
     }
 }

@@ -1,5 +1,7 @@
 package fr.milekat.hostmanager.storage;
 
+import fr.milekat.hostmanager.Main;
+import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
 import fr.milekat.hostmanager.storage.mysql.MySQLAdapter;
 import net.md_5.bungee.config.Configuration;
@@ -14,9 +16,18 @@ public class StorageManager {
         } else {
             throw new StorageLoaderException("Unsupported storage type");
         }
-        if (!executor.checkStorages()) {
-            throw new StorageLoaderException("Storages are not loaded properly");
+        try {
+            if (executor.checkStorages()) {
+                if (Main.DEBUG) {
+                    Main.getHostLogger().info("Storage loaded");
+                }
+            } else {
+                throw new StorageLoaderException("Storages are not loaded properly");
+            }
+        } catch (StorageExecuteException exception) {
+            throw new StorageLoaderException("Can't load storage properly");
         }
+
     }
 
     public StorageExecutor getStorageExecutor() {
