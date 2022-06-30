@@ -41,6 +41,14 @@ host:
       id: "owner-id"
       # This key can be generate in : https://your.panel.url/account/api
       key: "owner-key"
+    # You can add staff to manage your hosts, just add their mails in array, do not put a user in multiple ranks
+    staff:
+      # Admins have full access to console and file tab
+      admin: ["my-admin@example.com"]
+      # Moderators have full access to console tab
+      moderator: ["my-mod-aaa@example.org", "another-mod@example.com"]
+      # Watchers can only see console logs and server stats (CPU / MEM)
+      watchers: ["helpers@hypixel.net"]
     # Base egg id, should be an empty egg (If you don't know how to use this part, contact plugin author)
     egg: "1"
     # id of the egg nest

@@ -113,6 +113,20 @@ public class PterodactylRequests extends HttpExecute {
         }
     }
 
+    public static void setupStaff(String serverUuid, PterodactylUsersPermissions rank) throws HostExecuteException {
+        try {
+            for (String mail : Main.getFileConfig().getStringList("host.pterodactyl.staff." + rank.name())) {
+                JSONObject payload = new JSONObject();
+                payload.put("email", mail);
+                payload.put("permissions", rank.getPermissions());
+                execute(new URL(ENDPOINT + "/api/client/servers/" + serverUuid + "/users"),
+                        "GET", ADMIN_KEY, payload.toString());
+            }
+        } catch (IOException exception) {
+            throw new HostExecuteException(exception, "Can't fetch client servers");
+        }
+    }
+
     /**
      * Get all allocations of your node
      * @return List of JSONObject of allocations
