@@ -25,33 +25,24 @@ public class PterodactylAdapter implements HostExecutor {
      */
     @Override
     public boolean checkAvailability() throws HostExecuteException {
-        // TODO: 25/05/2022 all the checks
-        //  Old try..
-        //  try {
-        //  Check if account api key is valid
-        //  getAccount().retrieveAccount().execute();
-        //  } catch (LoginException exception) {
-        //      throw new HostExecuteException(exception, "Account API key is incorrect");
-        //  }
-        //  try {
-        //      //  Check if admin key has all needed permissions
-        //      getAdmin().retrieveAllocations().execute();
-        //      getAdmin().retrieveServers().execute();
-        //      //  Retrieve Location
-        //      //  Retrieve Egg
-        //      /*
-        //      Nest nest = getAdmin().retrieveNestById(Main.getFileConfig().getLong("host.pterodactyl.nest")).execute();
-        //      this.egg = Admin().retrieveEggById(nest, Main.getFileConfig().getLong("host.pterodactyl.egg")).execute();
-        //      *//*
-        //      this.egg = new ApplicationEggImpl(new JSONObject()
-        //              .put("id", Main.getFileConfig().getString("host.pterodactyl.egg"))
-        //              .put("nest", Main.getFileConfig().getString("host.pterodactyl.nest")), null);
-        //      this.owner = new ApplicationUserImpl(new JSONObject()
-        //              .put("id", Main.getFileConfig().getString("host.pterodactyl.account.id")), null);
-        //  } catch (LoginException exception) {
-        //      throw new HostExecuteException(exception,
-        //              "Admin API key is incorrect or doesn't have the required permissions");
-        //  }
+        //  Check user key access
+        try {
+            PterodactylRequests.getClientServers();
+        } catch (HostExecuteException exception) {
+            throw new HostExecuteException(exception, "Check your panel account key");
+        }
+        //  Check Admin key ALLOCATIONS PERMISSIONS
+        try {
+            PterodactylRequests.getAdminAllocations();
+        } catch (HostExecuteException exception) {
+            throw new HostExecuteException(exception, "Check your admin key, and allocation access");
+        }
+        //  Check Admin key SERVERS PERMISSIONS
+        try {
+            PterodactylRequests.getAdminServers();
+        } catch (HostExecuteException exception) {
+            throw new HostExecuteException(exception, "Check your admin key, and server access");
+        }
         return true;
     }
 
