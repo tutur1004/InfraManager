@@ -14,6 +14,7 @@ CREATE TABLE `{prefix}games` (
   `server_version` varchar(20) NOT NULL COMMENT 'Minecraft server version',
   `image` varchar(255) NOT NULL COMMENT 'Full image repo of this game',
   `requirements` smallint(5) UNSIGNED NOT NULL DEFAULT 2048 COMMENT 'amount of needed RAM to run this game (MB)',
+  `icon` varchar(64) NOT NULL DEFAULT 'GRASS' COMMENT 'Bukkit material id of item',
   `configs` LONGTEXT null comment 'VAR=VALUE;'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='List of all created games';
 CREATE INDEX `{prefix}game_id` ON `{prefix}games` (`game_name`);
