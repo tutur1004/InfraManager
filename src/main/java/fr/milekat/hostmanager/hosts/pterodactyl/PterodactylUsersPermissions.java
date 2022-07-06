@@ -7,7 +7,7 @@ import java.util.List;
 public enum PterodactylUsersPermissions {
     admin(Arrays.asList("websocket.connect",
             "control.console", "control.start", "control.stop", "control.restart",
-            "file.create", "file.read", "file.update", "file.delete", "file.archive", "file.sftp")),
+            "file.create", "file.read", "file.read-content", "file.update", "file.delete", "file.archive")),
     moderator(Arrays.asList("websocket.connect",
             "control.console", "control.start", "control.stop", "control.restart")),
     watchers(Collections.singletonList("websocket.connect"));

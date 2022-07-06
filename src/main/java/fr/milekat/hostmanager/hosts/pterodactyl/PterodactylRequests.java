@@ -63,6 +63,9 @@ public class PterodactylRequests extends HttpExecute {
             execute(new URL(ENDPOINT + "/api/application/servers/" + instance.getServerId() + "/force"),
                     "DELETE", ADMIN_KEY, null);
         } catch (IOException exception) {
+            if (exception.getCause().getMessage().contains("java.io.FileNotFoundException")) {
+                throw new HostExecuteException(exception, "Server not found ?");
+            }
             throw new HostExecuteException(exception, "Pterodactyl API error, URL IOException ?");
         }
     }
@@ -113,14 +116,22 @@ public class PterodactylRequests extends HttpExecute {
         }
     }
 
-    public static void setupStaff(String serverUuid, PterodactylUsersPermissions rank) throws HostExecuteException {
+    /**
+     * Add all users to the server
+     * @param serverIdentifier the id of the server
+     */
+    public static void setupStaff(String serverIdentifier) throws HostExecuteException {
         try {
-            for (String mail : Main.getFileConfig().getStringList("host.pterodactyl.staff." + rank.name())) {
-                JSONObject payload = new JSONObject();
-                payload.put("email", mail);
-                payload.put("permissions", rank.getPermissions());
-                execute(new URL(ENDPOINT + "/api/client/servers/" + serverUuid + "/users"),
-                        "GET", ADMIN_KEY, payload.toString());
+            for (PterodactylUsersPermissions rank : PterodactylUsersPermissions.values()) {
+                for (String mail : Main.getFileConfig().getStringList("host.pterodactyl.staff." + rank.name())) {
+                    JSONObject payload = new JSONObject();
+                    payload.put("email", mail);
+                    payload.put("permissions", rank.getPermissions());
+                    if (execute(new URL(ENDPOINT + "/api/client/servers/" + serverIdentifier + "/users"), "POST",
+                            ACCOUNT_KEY, payload.toString(), "Server returned HTTP response code: 40")==null) {
+                        throw new HostExecuteException("Can't update server users");
+                    }
+                }
             }
         } catch (IOException exception) {
             throw new HostExecuteException(exception, "Can't fetch client servers");

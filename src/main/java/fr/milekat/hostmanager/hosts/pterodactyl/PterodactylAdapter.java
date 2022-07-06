@@ -64,9 +64,6 @@ public class PterodactylAdapter implements HostExecutor {
 
         JSONObject server = PterodactylRequests.setupServer(instance);
 
-        // TODO: 28/06/2022 Add manager accounts
-        //  (Multi levels of permissions ? Reader, Writer, Admin ?)
-
         instance.setState(InstanceState.CREATING);
 
         if (server.has("attributes")) {
@@ -79,8 +76,11 @@ public class PterodactylAdapter implements HostExecutor {
                                 .replaceAll("\\+00:00$", "")
                         )
                 );
-            } catch (ParseException e) {
-                e.printStackTrace();
+                new RequestRetry().setupStaff(attributes.getString("identifier"));
+            } catch (ParseException exception) {
+                if (Main.DEBUG) {
+                    exception.printStackTrace();
+                }
                 Main.getHostLogger().warning("Error while trying to parse date: " +
                         attributes.getString("created_at"));
                 instance.setCreation(new Date());
@@ -107,7 +107,7 @@ public class PterodactylAdapter implements HostExecutor {
             ) {
                 return;
             }
-        } catch (StorageExecuteException e) {
+        } catch (StorageExecuteException exception) {
             if (Main.DEBUG) {
                 Main.getHostLogger().warning("Trying to delete an invalid or inactive server");
             }
@@ -118,14 +118,20 @@ public class PterodactylAdapter implements HostExecutor {
         ProxyServer.getInstance().getPluginManager().callEvent(deletionEvent);
         if (deletionEvent.isCancelled()) return;
 
-        PterodactylRequests.deleteServer(instance);
+        try {
+            PterodactylRequests.deleteServer(instance);
+        } catch (HostExecuteException exception) {
+            if (!exception.getMessage().contains("Server not found ?")) {
+                throw new HostExecuteException(exception, "Can't delete server " + instance.getName());
+            }
+        }
         ServerManager.removeServer(Main.HOST_BUNGEE_SERVER_PREFIX + instance.getName());
 
         try {
             instance.setState(InstanceState.TERMINATED);
             Main.getStorage().updateInstance(instance);
-        } catch (StorageExecuteException e) {
-            throw new HostExecuteException(e, "Can't update storage after server deletion");
+        } catch (StorageExecuteException exception) {
+            throw new HostExecuteException(exception, "Can't update storage after server deletion");
         }
         ServerDeletedEvent deletedEvent = new ServerDeletedEvent(instance);
         ProxyServer.getInstance().getPluginManager().callEvent(deletedEvent);

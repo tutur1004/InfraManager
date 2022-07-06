@@ -106,4 +106,12 @@ public class Main extends Plugin {
     public static Configuration getFileConfig() {
         return configFile;
     }
+
+    /**
+     * Get the plugin instance
+     * @return bungee-cord plugin instance
+     */
+    public static Plugin getInstance() {
+        return plugin;
+    }
 }
