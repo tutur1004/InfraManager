@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
+@SuppressWarnings("unused")
 public class API {
     private static final StorageExecutor EXECUTOR = Main.getStorage();
 
