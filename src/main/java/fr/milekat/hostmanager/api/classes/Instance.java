@@ -5,8 +5,9 @@ import java.util.Date;
 public class Instance {
     private final Integer id;
     private String name;
-    private final String description;
     private String serverId;
+    private final String description;
+    private String message;
     private int port;
     private InstanceState state;
     private final Game game;
@@ -31,11 +32,12 @@ public class Instance {
         this.host = host;
     }
 
-    public Instance(Integer id, String name, String description, String serverId, int port, InstanceState state, Game game, User host, Date creation, Date deletion) {
+    public Instance(Integer id, String name, String serverId, String description, String message, int port, InstanceState state, Game game, User host, Date creation, Date deletion) {
         this.id = id;
         this.name = name;
-        this.description = description;
         this.serverId = serverId;
+        this.description = description;
+        this.message = message;
         this.port = port;
         this.state = state;
         this.game = game;
@@ -56,12 +58,20 @@ public class Instance {
         this.name = name;
     }
 
+    public String getServerId() {
+        return serverId;
+    }
+
     public String getDescription() {
         return description;
     }
 
-    public String getServerId() {
-        return serverId;
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public void setServerId(String serverId) {
