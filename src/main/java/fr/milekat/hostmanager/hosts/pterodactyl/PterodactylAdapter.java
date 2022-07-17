@@ -7,10 +7,12 @@ import fr.milekat.hostmanager.api.events.ServerCreatedEvent;
 import fr.milekat.hostmanager.api.events.ServerDeletedEvent;
 import fr.milekat.hostmanager.api.events.ServerDeletionEvent;
 import fr.milekat.hostmanager.hosts.HostExecutor;
+import fr.milekat.hostmanager.hosts.bungee.BungeeUtils;
 import fr.milekat.hostmanager.hosts.bungee.ServerManager;
 import fr.milekat.hostmanager.hosts.exeptions.HostExecuteException;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.event.ServerConnectEvent;
 import org.json.JSONObject;
 
 import java.text.ParseException;
@@ -118,6 +120,15 @@ public class PterodactylAdapter implements HostExecutor {
         ProxyServer.getInstance().getPluginManager().callEvent(deletionEvent);
         if (deletionEvent.isCancelled()) return;
 
+        //  Reconnect all players from the host to the lobby, and delete the host
+        ProxyServer.getInstance().getPlayers()
+                .stream()
+                .filter(proxiedPlayer -> proxiedPlayer.getServer().getInfo().getName()
+                        .equalsIgnoreCase(Main.HOST_BUNGEE_SERVER_PREFIX + instance.getName()))
+                .forEach(proxiedPlayer -> proxiedPlayer.connect(BungeeUtils.getLobbyList().get(0),
+                        ServerConnectEvent.Reason.PLUGIN));
+        ServerManager.removeServer(Main.HOST_BUNGEE_SERVER_PREFIX + instance.getName());
+
         try {
             PterodactylRequests.deleteServer(instance);
         } catch (HostExecuteException exception) {
@@ -125,7 +136,6 @@ public class PterodactylAdapter implements HostExecutor {
                 throw new HostExecuteException(exception, "Can't delete server " + instance.getName());
             }
         }
-        ServerManager.removeServer(Main.HOST_BUNGEE_SERVER_PREFIX + instance.getName());
 
         try {
             instance.setState(InstanceState.TERMINATED);

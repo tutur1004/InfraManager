@@ -6,18 +6,19 @@ import fr.milekat.hostmanager.hosts.commands.DeleteServer;
 import fr.milekat.hostmanager.hosts.commands.ResetHosts;
 import fr.milekat.hostmanager.hosts.exeptions.HostExecuteException;
 import fr.milekat.hostmanager.hosts.pterodactyl.PterodactylAdapter;
+import fr.milekat.hostmanager.hosts.workers.HostRemover;
+import fr.milekat.hostmanager.hosts.workers.LobbyChannels;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
+import org.jetbrains.annotations.NotNull;
 
 public class HostsManager {
     private final HostExecutor hostExecutor;
 
-    public HostsManager(Plugin plugin, Configuration config) throws HostExecuteException {
-        ProxyServer.getInstance().getPluginManager().registerCommand(plugin, new CreateServer());
-        ProxyServer.getInstance().getPluginManager().registerCommand(plugin, new DeleteServer());
-        ProxyServer.getInstance().getPluginManager().registerCommand(plugin, new ResetHosts());
+    public HostsManager(Plugin plugin, @NotNull Configuration config) throws HostExecuteException {
+        //  Load host provider
         if (config.getString("host.provider").equalsIgnoreCase("pterodactyl")) {
             hostExecutor = new PterodactylAdapter();
         } else {
@@ -31,11 +32,16 @@ public class HostsManager {
         } catch (StorageExecuteException e) {
             Main.getHostLogger().warning("Couldn't load existing hosts to bungee");
         }
+        //  Register admin commands
+        ProxyServer.getInstance().getPluginManager().registerCommand(plugin, new CreateServer());
+        ProxyServer.getInstance().getPluginManager().registerCommand(plugin, new DeleteServer());
+        ProxyServer.getInstance().getPluginManager().registerCommand(plugin, new ResetHosts());
+        //  Init PluginMessages channels
+        new LobbyChannels();
+        new HostRemover();
     }
 
     public HostExecutor getHostExecutor() {
         return hostExecutor;
     }
-
-
 }
