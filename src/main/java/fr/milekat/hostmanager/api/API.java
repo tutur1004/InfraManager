@@ -15,7 +15,7 @@ public class API {
 
     /**
      * Get tickets amount of player
-     * @param uuid uuid of player
+     * @param uuid {@link UUID} of {@link ProxiedPlayer}
      * @return ticket amount
      */
     public static Integer getTickets(UUID uuid) throws StorageExecuteException {
@@ -24,7 +24,7 @@ public class API {
 
     /**
      * Get tickets amount of player
-     * @param player player
+     * @param player {@link ProxiedPlayer}
      * @return ticket amount
      */
     public static Integer getTickets(ProxiedPlayer player) throws StorageExecuteException {
@@ -33,7 +33,7 @@ public class API {
 
     /**
      * Add tickets to player
-     * @param player player
+     * @param player {@link ProxiedPlayer}
      */
     public static void addPlayerTickets(ProxiedPlayer player, Integer amount) throws StorageExecuteException {
         EXECUTOR.addPlayerTickets(player.getUniqueId(), player.getName(), amount);
@@ -41,7 +41,7 @@ public class API {
 
     /**
      * Get a user if present, otherwise return null
-     * @param uuid of player
+     * @param uuid of {@link ProxiedPlayer}
      * @return User or null
      */
     @Nullable
