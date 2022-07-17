@@ -3,6 +3,7 @@ package fr.milekat.hostmanager.storage.mysql;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import net.md_5.bungee.config.Configuration;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,7 +11,7 @@ import java.sql.SQLException;
 public class MySQLPool {
     private static HikariDataSource ds;
 
-    public MySQLPool(Configuration config) {
+    public MySQLPool(@NotNull Configuration config) {
         HikariConfig hConfig = new HikariConfig();
         if (config.getString("storage.type").equalsIgnoreCase("mysql")) {
             hConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
