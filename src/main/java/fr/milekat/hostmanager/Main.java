@@ -16,8 +16,9 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 public class Main extends Plugin {
-    public static String HOST_UUID_ENV_VAR_NAME = "HOST_UUID";
-    public static String HOST_BUNGEE_SERVER_PREFIX = "host:";
+    public static final String HOST_UUID_ENV_VAR_NAME = "HOST_UUID";
+    public static final String HOST_BUNGEE_SERVER_PREFIX = "host:";
+    public static final String MESSAGE_CHANNEL = "host:channel";
 
     private static Plugin plugin;
     private static Configuration configFile;

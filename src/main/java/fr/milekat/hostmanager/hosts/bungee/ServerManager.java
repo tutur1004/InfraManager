@@ -7,7 +7,6 @@ import java.net.InetSocketAddress;
 import java.util.stream.Collectors;
 
 public class ServerManager {
-    // TODO: 22/06/2022 Load servers in bungee list on startup
     /**
      * Add a server to bungee server list
      */
