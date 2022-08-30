@@ -1,4 +1,4 @@
-package fr.milekat.hostmanager.hosts.pterodactyl;
+package fr.milekat.hostmanager.hosts.adapter.pterodactyl;
 
 import fr.milekat.hostmanager.Main;
 import fr.milekat.hostmanager.api.classes.Instance;
@@ -7,6 +7,7 @@ import fr.milekat.hostmanager.api.events.ServerCreatedEvent;
 import fr.milekat.hostmanager.api.events.ServerDeletedEvent;
 import fr.milekat.hostmanager.api.events.ServerDeletionEvent;
 import fr.milekat.hostmanager.hosts.HostExecutor;
+import fr.milekat.hostmanager.hosts.Utils;
 import fr.milekat.hostmanager.hosts.bungee.BungeeUtils;
 import fr.milekat.hostmanager.hosts.bungee.ServerManager;
 import fr.milekat.hostmanager.hosts.exeptions.HostExecuteException;
@@ -18,7 +19,6 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 public class PterodactylAdapter implements HostExecutor {
     /**
@@ -55,7 +55,7 @@ public class PterodactylAdapter implements HostExecutor {
     @Override
     public void createServer(Instance instance) throws HostExecuteException, StorageExecuteException {
         if (instance.getPort()==0) {
-            Integer port = getAvailablePort();
+            Integer port = Utils.getAvailablePort();
             if (port!=null) {
                 instance.setPort(port);
             } else {
@@ -145,16 +145,5 @@ public class PterodactylAdapter implements HostExecutor {
         }
         ServerDeletedEvent deletedEvent = new ServerDeletedEvent(instance);
         ProxyServer.getInstance().getPluginManager().callEvent(deletedEvent);
-    }
-
-    /**
-     * Get an available port
-     */
-    private Integer getAvailablePort() throws StorageExecuteException {
-        return Main.getStorage().findAvailablePort(Main.getFileConfig()
-                .getList("host.ports")
-                .stream()
-                .map(o -> Integer.valueOf(o.toString()))
-                .collect(Collectors.toList()));
     }
 }

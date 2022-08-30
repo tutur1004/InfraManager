@@ -1,11 +1,11 @@
 package fr.milekat.hostmanager.hosts;
 
 import fr.milekat.hostmanager.Main;
+import fr.milekat.hostmanager.hosts.adapter.pterodactyl.PterodactylAdapter;
 import fr.milekat.hostmanager.hosts.commands.CreateServer;
 import fr.milekat.hostmanager.hosts.commands.DeleteServer;
 import fr.milekat.hostmanager.hosts.commands.ResetHosts;
 import fr.milekat.hostmanager.hosts.exeptions.HostExecuteException;
-import fr.milekat.hostmanager.hosts.pterodactyl.PterodactylAdapter;
 import fr.milekat.hostmanager.hosts.workers.HostRemover;
 import fr.milekat.hostmanager.hosts.workers.LobbyChannels;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
@@ -19,7 +19,7 @@ public class HostsManager {
 
     public HostsManager(Plugin plugin, @NotNull Configuration config) throws HostExecuteException {
         //  Load host provider
-        if (config.getString("host.provider").equalsIgnoreCase("pterodactyl")) {
+        if (config.getString("host.settings.provider").equalsIgnoreCase("pterodactyl")) {
             hostExecutor = new PterodactylAdapter();
         } else {
             throw new HostExecuteException("Unsupported database type");
@@ -28,7 +28,7 @@ public class HostsManager {
             throw new HostExecuteException("Storages are not loaded properly");
         }
         try {
-            hostExecutor.resetBungeeHostList();
+            Utils.resetBungeeHostList();
         } catch (StorageExecuteException e) {
             Main.getHostLogger().warning("Couldn't load existing hosts to bungee");
         }

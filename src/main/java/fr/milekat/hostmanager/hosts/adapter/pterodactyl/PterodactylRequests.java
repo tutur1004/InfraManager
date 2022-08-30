@@ -1,7 +1,8 @@
-package fr.milekat.hostmanager.hosts.pterodactyl;
+package fr.milekat.hostmanager.hosts.adapter.pterodactyl;
 
 import fr.milekat.hostmanager.Main;
 import fr.milekat.hostmanager.api.classes.Instance;
+import fr.milekat.hostmanager.hosts.Utils;
 import fr.milekat.hostmanager.hosts.exeptions.HostExecuteException;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -12,7 +13,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class PterodactylRequests extends HttpExecute {
     private static final String ENDPOINT = Main.getFileConfig().getString("host.pterodactyl.endpoint");
@@ -26,21 +26,15 @@ public class PterodactylRequests extends HttpExecute {
      */
     public static @NotNull JSONObject setupServer(@NotNull Instance instance) throws HostExecuteException {
         try {
-            JSONObject envVars = new JSONObject();
-            envVars.put(Main.HOST_UUID_ENV_VAR_NAME, instance.getHost().getUuid());
-            envVars.put("CONFIG", instance.getGame().getConfigs().keySet()
-                    .stream()
-                    .map(key -> key + "=" + instance.getGame().getConfigs().get(key))
-                    .collect(Collectors.joining(";")));
             return execute(new URL(ENDPOINT + "/api/application/servers"), "POST", ADMIN_KEY,
                     new JSONObject().put("name", instance.getName())
                             .put("description", instance.getDescription())
                             .put("user", Main.getFileConfig().getString("host.pterodactyl.account.id"))
                             .put("egg", Main.getFileConfig().getString("host.pterodactyl.egg"))
                             .put("docker_image", instance.getGame().getImage())
-                            .put("startup", Main.getFileConfig().getString("host.command")
+                            .put("startup", Main.getFileConfig().getString("host.settings.command")
                                     .replaceAll("\\{MEM}", String.valueOf(instance.getGame().getRequirements())))
-                            .put("environment", envVars)
+                            .put("environment", new JSONObject(Utils.getEnvVars(instance)))
                             .put("limits", new JSONObject().put("memory", instance.getGame().getRequirements())
                                     .put("swap", 0).put("disk", 1024).put("io", 500).put("cpu", 0))
                             .put("feature_limits", new JSONObject().put("databases", 0).put("backups", 0))

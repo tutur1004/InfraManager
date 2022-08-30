@@ -1,6 +1,7 @@
 package fr.milekat.hostmanager.hosts.commands;
 
 import fr.milekat.hostmanager.Main;
+import fr.milekat.hostmanager.hosts.Utils;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -17,7 +18,7 @@ public class ResetHosts extends Command {
     @Override
     public void execute(CommandSender sender, String[] args) {
         try {
-            Main.getHosts().resetBungeeHostList();
+            Utils.resetBungeeHostList();
             sender.sendMessage(new TextComponent("Server list reset !"));
         } catch (StorageExecuteException exception) {
             sender.sendMessage(new TextComponent("§cStorage exception, check console"));

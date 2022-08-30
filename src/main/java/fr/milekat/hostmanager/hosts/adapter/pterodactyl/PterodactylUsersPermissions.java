@@ -1,4 +1,4 @@
-package fr.milekat.hostmanager.hosts.pterodactyl;
+package fr.milekat.hostmanager.hosts.adapter.pterodactyl;
 
 import java.util.Arrays;
 import java.util.Collections;

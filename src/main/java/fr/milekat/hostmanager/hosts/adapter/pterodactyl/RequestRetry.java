@@ -1,4 +1,4 @@
-package fr.milekat.hostmanager.hosts.pterodactyl;
+package fr.milekat.hostmanager.hosts.adapter.pterodactyl;
 
 import fr.milekat.hostmanager.Main;
 import fr.milekat.hostmanager.hosts.exeptions.HostExecuteException;

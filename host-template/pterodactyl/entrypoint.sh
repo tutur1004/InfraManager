@@ -10,11 +10,11 @@ cd /home/container
 echo "Replace env values in files"
 export IFS=";"
 d=$'\03'
-for config in $CONFIG; do
+for config in $CONFIGPARSER; do
 	if echo "$config" | grep -q "="
 	then
-		KEY="$(echo $config | cut -d'=' -f1)"
-		VAL="$(echo $config | cut -d'=' -f2)"
+		KEY="$(echo "$config" | cut -d'=' -f1)"
+		VAL="$(echo "$config" | cut -d'=' -f2)"
 		find * -type f \( -name "*.yml" -o -name "*.properties" \) -exec sed -i "s${d}%{$KEY}%${d}$VAL${d}g" {} +
 	fi
 done
