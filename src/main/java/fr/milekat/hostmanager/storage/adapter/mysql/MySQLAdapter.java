@@ -1,4 +1,4 @@
-package fr.milekat.hostmanager.storage.mysql;
+package fr.milekat.hostmanager.storage.adapter.mysql;
 
 import fr.milekat.hostmanager.Main;
 import fr.milekat.hostmanager.api.classes.*;
@@ -57,6 +57,12 @@ public class MySQLAdapter implements StorageExecutor {
             "WHERE (l.log_date BETWEEN ? AND ?);";
     private final String FIND_AVAILABLE_PORTS = "SELECT port FROM {prefix}instances " +
             "WHERE state <>4;";
+    private final String FETCH_GAME_CONFIGS = "SELECT props.property_name as var, props.value as val " +
+            "FROM {prefix}properties props " +
+            "INNER JOIN {prefix}profiles prof ON props.profile=prof.profile_id " +
+            "INNER JOIN {prefix}game_strategies str ON props.profile=str.profile " +
+            "WHERE props.enable=1 AND (prof.profile_name='global' OR (str.game=? AND prof.enable=1)) " +
+            "ORDER BY props.profile DESC;";
 
     private final String ADD_TICKETS = "INSERT INTO {prefix}users (uuid, last_name, tickets) " +
             "VALUES (?,?,?) ON DUPLICATE KEY UPDATE last_name = ?, tickets = tickets + ?;";
@@ -527,11 +533,6 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Contract("_ -> new")
     private @NotNull Game resultSetToGame(@NotNull ResultSet r) throws SQLException {
-        Map<String, String> envVars = new HashMap<>();
-        Arrays.stream(r.getString("configs").split(";")).forEach(var -> {
-            String[] splitKeyValue = var.split("=", 2);
-            if (splitKeyValue.length==2) envVars.put(splitKeyValue[0], splitKeyValue[1]);
-        });
         return new Game(r.getInt("game_id"),
                 r.getString("game_name"),
                 new Date(r.getTimestamp("create_date").getTime()),
@@ -540,7 +541,7 @@ public class MySQLAdapter implements StorageExecutor {
                 r.getString("server_version"),
                 r.getString("image"),
                 r.getInt("requirements"),
-                envVars);
+                fetchConfigs(r.getInt("game_id")));
     }
 
     /**
@@ -564,5 +565,21 @@ public class MySQLAdapter implements StorageExecutor {
                 UUID.fromString(r.getString("uuid")),
                 r.getString("last_name"),
                 r.getInt("tickets"));
+    }
+
+    /**
+     * Shortcut to fetch all game configs
+     */
+    private @NotNull Map<String, String> fetchConfigs(int gameId) throws SQLException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(FETCH_GAME_CONFIGS))) {
+            q.setInt(1, gameId);
+            q.execute();
+            Map<String, String> configs = new HashMap<>();
+            while (q.getResultSet().next()) {
+                configs.put(q.getResultSet().getString("var"), q.getResultSet().getString("val"));
+            }
+            return configs;
+        }
     }
 }

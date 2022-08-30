@@ -1,4 +1,4 @@
-package fr.milekat.hostmanager.storage.mysql;
+package fr.milekat.hostmanager.storage.adapter.mysql;
 
 import org.jetbrains.annotations.NotNull;
 

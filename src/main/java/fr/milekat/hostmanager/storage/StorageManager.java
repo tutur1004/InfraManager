@@ -1,9 +1,9 @@
 package fr.milekat.hostmanager.storage;
 
 import fr.milekat.hostmanager.Main;
+import fr.milekat.hostmanager.storage.adapter.mysql.MySQLAdapter;
 import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
 import fr.milekat.hostmanager.storage.exeptions.StorageLoaderException;
-import fr.milekat.hostmanager.storage.mysql.MySQLAdapter;
 import net.md_5.bungee.config.Configuration;
 import org.jetbrains.annotations.NotNull;
 
