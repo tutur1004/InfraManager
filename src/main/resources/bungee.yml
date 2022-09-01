@@ -1,0 +1,5 @@
+name: HostManager
+author: MileKat
+main: fr.milekat.hostmanager.bungeecord.Main
+version: '1.0'
+description: "Management plugin of this host system"

@@ -17,6 +17,8 @@ host:
     # List of bungee server name considered as lobby servers
     lobby-name:
     - lobby
+    # Servers hostname
+    host: 192.168.0.1
     # Port list (You should put 1 port per instance)
     ports: [25565, 25566]
     provider: pterodactyl

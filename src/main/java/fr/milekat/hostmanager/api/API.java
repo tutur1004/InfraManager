@@ -1,10 +1,9 @@
 package fr.milekat.hostmanager.api;
 
-import fr.milekat.hostmanager.Main;
 import fr.milekat.hostmanager.api.classes.User;
-import fr.milekat.hostmanager.storage.StorageExecutor;
-import fr.milekat.hostmanager.storage.exeptions.StorageExecuteException;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+import fr.milekat.hostmanager.common.Main;
+import fr.milekat.hostmanager.common.storage.StorageExecutor;
+import fr.milekat.hostmanager.common.storage.exeptions.StorageExecuteException;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -15,7 +14,7 @@ public class API {
 
     /**
      * Get tickets amount of player
-     * @param uuid {@link UUID} of {@link ProxiedPlayer}
+     * @param uuid {@link UUID}
      * @return ticket amount
      */
     public static Integer getTickets(UUID uuid) throws StorageExecuteException {
@@ -23,25 +22,16 @@ public class API {
     }
 
     /**
-     * Get tickets amount of player
-     * @param player {@link ProxiedPlayer}
-     * @return ticket amount
-     */
-    public static Integer getTickets(ProxiedPlayer player) throws StorageExecuteException {
-        return getTickets(player.getUniqueId());
-    }
-
-    /**
      * Add tickets to player
-     * @param player {@link ProxiedPlayer}
+     * @param uuid {@link UUID}
      */
-    public static void addPlayerTickets(ProxiedPlayer player, Integer amount) throws StorageExecuteException {
-        EXECUTOR.addPlayerTickets(player.getUniqueId(), player.getName(), amount);
+    public static void addPlayerTickets(UUID uuid, String playerName, Integer amount) throws StorageExecuteException {
+        EXECUTOR.addPlayerTickets(uuid, playerName, amount);
     }
 
     /**
      * Get a user if present, otherwise return null
-     * @param uuid of {@link ProxiedPlayer}
+     * @param uuid of {@link UUID}
      * @return User or null
      */
     @Nullable

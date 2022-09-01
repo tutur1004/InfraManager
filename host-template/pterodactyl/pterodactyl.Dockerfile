@@ -5,7 +5,7 @@
 # ----------------------------------
 FROM eclipse-temurin:8-jre-alpine
 
-MAINTAINER MileKat
+MAINTAINER MileKat => tutur1004#7091
 
 RUN adduser --disabled-password container
 RUN chown -R container:container /home/container
