@@ -17,7 +17,7 @@ public class ResetHosts extends Command {
     @Override
     public void execute(CommandSender sender, String[] args) {
         try {
-            Main.getUtilsManager().getServerManager().resetHostList();
+            Main.getUtilsManager().getHostUtils().resetHostList();
             sender.sendMessage(new TextComponent("Server list reset !"));
         } catch (StorageExecuteException exception) {
             sender.sendMessage(new TextComponent("§cStorage exception, check console"));

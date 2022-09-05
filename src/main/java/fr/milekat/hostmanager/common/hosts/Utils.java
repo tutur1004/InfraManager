@@ -24,6 +24,10 @@ public class Utils {
     public static Map<String, String> getEnvVars(Instance instance) {
         Map<String, String> envVars = new HashMap<>();
         envVars.put(Main.HOST_UUID_ENV_VAR_NAME, instance.getHost().getUuid().toString());
+        envVars.put("STARTUP", Main.getConfig().getString("host.settings.command"));
+        envVars.put("MIN_MEMORY", instance.getGame().getRequirements() + "M");
+        envVars.put("MAX_MEMORY", instance.getGame().getRequirements() + "M");
+        envVars.put("PORT", String.valueOf(instance.getPort()));
         envVars.put("GAME", instance.getGame().getName());
         envVars.put("VERSION", instance.getGame().getGameVersion());
         envVars.put("CONFIGPARSER", instance.getGame().getConfigs().keySet()

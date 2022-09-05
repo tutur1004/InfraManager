@@ -4,7 +4,7 @@ import fr.milekat.hostmanager.api.classes.Instance;
 import fr.milekat.hostmanager.common.Main;
 import fr.milekat.hostmanager.common.hosts.Utils;
 import fr.milekat.hostmanager.common.storage.exeptions.StorageExecuteException;
-import fr.milekat.hostmanager.common.utils.ServerUtils;
+import fr.milekat.hostmanager.common.utils.HostUtils;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.event.ServerConnectEvent;
@@ -13,7 +13,7 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BungeeServer implements ServerUtils {
+public class BungeeHost implements HostUtils {
     /**
      * Find all bungee server from the config lobby list
      * @return a list of Bungee {@link ServerInfo} representing all lobby
@@ -40,6 +40,7 @@ public class BungeeServer implements ServerUtils {
     /**
      * Load all hosts in proxy server list
      */
+    @Override
     public void resetHostList() throws StorageExecuteException {
         removeServersPrefix(Main.HOST_PROXY_SERVER_PREFIX);
         for (Instance server : Main.getStorage().getActiveInstances()) {
@@ -50,6 +51,7 @@ public class BungeeServer implements ServerUtils {
     /**
      * Add a server to bungee server list
      */
+    @Override
     public void addServer(String name, int port) {
         InetSocketAddress ipAddress =
                 new InetSocketAddress(Main.getConfig().getString("host.settings.host"), port);
@@ -61,6 +63,7 @@ public class BungeeServer implements ServerUtils {
     /**
      * Remove a server from bungee server list (If exist)
      */
+    @Override
     public void removeServer(String name) {
         ProxyServer.getInstance().getServers().remove(name);
     }
@@ -69,6 +72,7 @@ public class BungeeServer implements ServerUtils {
      * Delete all server that start with prefix
      * @param prefix of the servers to delete
      */
+    @Override
     public void removeServersPrefix(String prefix) {
         ProxyServer.getInstance().getServers().keySet()
                 .stream()

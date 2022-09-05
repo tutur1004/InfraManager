@@ -11,8 +11,12 @@ public class StorageManager {
     private final StorageExecutor executor;
 
     public StorageManager(@NotNull Configs config) throws StorageLoaderException {
-        if (config.getString("storage.type").equalsIgnoreCase("mysql") ||
-                config.getString("storage.type").equalsIgnoreCase("mariadb")) {
+        String storageType = config.getString("storage.type");
+        if (Main.DEBUG) {
+            Main.getLogger().info("Loading storage type: " + storageType);
+        }
+        if (storageType.equalsIgnoreCase("mysql") ||
+                storageType.equalsIgnoreCase("mariadb")) {
             executor = new MySQLAdapter(config);
         } else {
             throw new StorageLoaderException("Unsupported storage type");

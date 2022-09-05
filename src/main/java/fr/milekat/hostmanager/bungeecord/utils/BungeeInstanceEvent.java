@@ -9,6 +9,10 @@ import fr.milekat.hostmanager.common.utils.EventCaller;
 import net.md_5.bungee.api.ProxyServer;
 
 public class BungeeInstanceEvent implements EventCaller {
+    /**
+     * Create a new InstanceEvent for Bungee events
+     */
+    @Override
     public InstanceEvent callEvent(CommonEvent.EventName eventName, Instance instance) {
         return new InstanceEvent(eventName, instance);
     }
@@ -40,6 +44,9 @@ public class BungeeInstanceEvent implements EventCaller {
             }
         }
 
+        /**
+         * Cancel the event
+         */
         @Override
         public void setCancel(boolean cancel) {
             switch (eventName) {
@@ -54,6 +61,9 @@ public class BungeeInstanceEvent implements EventCaller {
             }
         }
 
+        /**
+         * Check if event is cancelled
+         */
         @Override
         public boolean isCancelled() {
             switch (eventName) {

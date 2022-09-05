@@ -20,7 +20,7 @@ public class ResetHosts implements SimpleCommand {
         if (invocation.source() instanceof Player) {
             Player sender = (Player) invocation.source();
             try {
-                Main.getUtilsManager().getServerManager().resetHostList();
+                Main.getUtilsManager().getHostUtils().resetHostList();
                 sender.sendMessage(Component.text("Server list reset !"));
             } catch (StorageExecuteException exception) {
                 sender.sendMessage(Component.text("§cStorage exception, check console"));

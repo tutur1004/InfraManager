@@ -60,7 +60,7 @@ public class MySQLAdapter implements StorageExecutor {
     private final String FETCH_GAME_CONFIGS = "SELECT props.property_name as var, props.value as val " +
             "FROM {prefix}properties props " +
             "INNER JOIN {prefix}profiles prof ON props.profile=prof.profile_id " +
-            "INNER JOIN {prefix}game_strategies str ON props.profile=str.profile " +
+            "LEFT JOIN {prefix}game_strategies str ON props.profile=str.profile " +
             "WHERE props.enable=1 AND (prof.profile_name='global' OR (str.game=? AND prof.enable=1)) " +
             "ORDER BY props.profile DESC;";
 

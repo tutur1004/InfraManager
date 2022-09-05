@@ -1,49 +1,53 @@
 package fr.milekat.hostmanager.common.utils;
 
+import ninja.leaping.configurate.ConfigurationNode;
+import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.yaml.snakeyaml.Yaml;
 
-import java.io.InputStream;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Configs {
-    private final InputStream configs;
+    private final File configs;
 
-    public Configs(InputStream configs) {
+    public Configs(File configs) {
         this.configs = configs;
     }
 
     private List<String> getKeys(String node) {
-        return Arrays.asList(node.split(node, '.'));
-    }
-
-    @Nullable
-    private Object getValue(String node) {
-        Object value = null;
-        for (String key : getKeys(node)) {
-            Map<String, Object> keyValue = new Yaml().load(configs);
-            value =  keyValue.get(key);
+        if (node.contains(".")) {
+            return Arrays.asList(node.split("\\."));
+        } else {
+            return Collections.singletonList(node);
         }
-        return value;
     }
 
-    @NotNull
-    public Boolean getBoolean(String node) {
-        Object bool = getValue(node);
-        return bool != null && (Boolean) bool;
+    private @Nullable ConfigurationNode getValue(String node) {
+        try {
+            ConfigurationNode valueNode = YAMLConfigurationLoader.builder().setFile(configs).build().load();
+            for (String key : getKeys(node)) {
+                valueNode = valueNode.getNode(key);
+            }
+            return valueNode;
+        } catch (IOException ignored) {
+            return null;
+        }
     }
 
-    @NotNull
-    public String getString(String node) {
-        return String.valueOf(getValue(node));
+    public @NotNull Boolean getBoolean(String node) {
+        return Objects.requireNonNull(getValue(node)).getBoolean();
     }
 
-    @NotNull
-    public List<?> getList(String node) {
+    public @NotNull String getString(String node) {
+        return Objects.requireNonNull(getValue(node)).getString("");
+    }
+
+    public @NotNull List<?> getList(String node) {
         List<?> list = new ArrayList<>();
-        Object obj = getValue(node);
+        Object obj = Objects.requireNonNull(getValue(node)).getValue();
         if (obj != null && obj.getClass().isArray()) {
             list = Arrays.asList((Object[]) obj);
         } else if (obj instanceof Collection) {
@@ -52,8 +56,7 @@ public class Configs {
         return list;
     }
 
-    @NotNull
-    public List<String> getStringList(String node) {
+    public @NotNull List<String> getStringList(String node) {
         return getList(node).stream().map(Object::toString).collect(Collectors.toList());
     }
 }

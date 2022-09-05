@@ -1,13 +1,9 @@
 package fr.milekat.hostmanager.common.hosts.adapter.pterodactyl;
 
 import fr.milekat.hostmanager.api.classes.Instance;
-import fr.milekat.hostmanager.api.classes.InstanceState;
 import fr.milekat.hostmanager.common.Main;
 import fr.milekat.hostmanager.common.hosts.HostExecutor;
-import fr.milekat.hostmanager.common.hosts.Utils;
 import fr.milekat.hostmanager.common.hosts.exeptions.HostExecuteException;
-import fr.milekat.hostmanager.common.storage.exeptions.StorageExecuteException;
-import fr.milekat.hostmanager.common.utils.CommonEvent;
 import org.json.JSONObject;
 
 import java.text.ParseException;
@@ -47,21 +43,8 @@ public class PterodactylAdapter implements HostExecutor {
      * @param instance server params
      */
     @Override
-    public void createServer(Instance instance) throws HostExecuteException, StorageExecuteException {
-        if (instance.getPort()==0) {
-            Integer port = Utils.getAvailablePort();
-            if (port!=null) {
-                instance.setPort(port);
-            } else {
-                Main.getLogger().warn("No port available.");
-                throw new HostExecuteException("No port available.");
-            }
-        }
-
+    public void createServer(Instance instance) throws HostExecuteException {
         JSONObject server = PterodactylRequests.setupServer(instance);
-
-        instance.setState(InstanceState.CREATING);
-
         if (server.has("attributes")) {
             JSONObject attributes = server.getJSONObject("attributes");
             instance.setServerId(String.valueOf(attributes.getInt("id")));
@@ -85,39 +68,14 @@ public class PterodactylAdapter implements HostExecutor {
             instance.setCreation(new Date());
             instance.setServerId(null);
         }
-
-        Main.getStorage().createInstance(instance);
-
-        Main.getUtilsManager().getServerManager().
-                addServer(Main.HOST_PROXY_SERVER_PREFIX + instance.getName(), instance.getPort());
-
-        Main.callEvent(CommonEvent.EventName.ServerCreatedEvent, instance);
     }
 
+    /**
+     * Delete a pterodactyl server !
+     * @param instance server params
+     */
     @Override
     public void deleteServer(Instance instance) throws HostExecuteException {
-        try {
-            if (Main.getStorage().getActiveInstances()
-                    .stream()
-                    .noneMatch(o -> o.getServerId().equalsIgnoreCase(instance.getServerId()))
-            ) {
-                return;
-            }
-        } catch (StorageExecuteException exception) {
-            if (Main.DEBUG) {
-                Main.getLogger().warn("Trying to delete an invalid or inactive server");
-            }
-            return;
-        }
-
-        CommonEvent deletionEvent = Main.callEvent(CommonEvent.EventName.ServerDeletionEvent, instance);
-        if (deletionEvent.isCancelled()) return;
-
-        //  Reconnect all players from the host to the lobby, and delete the host
-        Main.getUtilsManager().getServerManager().reconnectAllPlayersToLobby(instance);
-        Main.getUtilsManager().getServerManager()
-                .removeServer(Main.HOST_PROXY_SERVER_PREFIX + instance.getName());
-
         try {
             PterodactylRequests.deleteServer(instance);
         } catch (HostExecuteException exception) {
@@ -125,13 +83,5 @@ public class PterodactylAdapter implements HostExecutor {
                 throw new HostExecuteException(exception, "Can't delete server " + instance.getName());
             }
         }
-
-        try {
-            instance.setState(InstanceState.TERMINATED);
-            Main.getStorage().updateInstance(instance);
-        } catch (StorageExecuteException exception) {
-            throw new HostExecuteException(exception, "Can't update storage after server deletion");
-        }
-        Main.callEvent(CommonEvent.EventName.ServerDeletedEvent, instance);
     }
 }

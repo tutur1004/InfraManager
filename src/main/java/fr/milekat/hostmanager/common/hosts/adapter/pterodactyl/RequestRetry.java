@@ -38,7 +38,7 @@ public class RequestRetry {
                 }
                 cancel();
             }
-        }, 0, 5, TimeUnit.SECONDS);
+        }, 1, 5, TimeUnit.SECONDS);
     }
 
     /**

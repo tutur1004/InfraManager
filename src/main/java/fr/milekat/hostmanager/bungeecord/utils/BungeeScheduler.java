@@ -15,6 +15,10 @@ public class BungeeScheduler implements Scheduler {
         this.plugin = plugin;
     }
 
+    /**
+     * Schedule a new {@link Scheduled} Bungee task
+     */
+    @Override
     public Task newSchedule(Runnable task, long delay, long period, TimeUnit unit) {
         return new Scheduled(plugin, task, delay, period, unit);
     }
@@ -26,6 +30,10 @@ public class BungeeScheduler implements Scheduler {
             this.task = ProxyServer.getInstance().getScheduler().schedule(plugin, task, delay, period, unit);
         }
 
+        /**
+         * Cancel this {@link Scheduled} Bungee task
+         */
+        @Override
         public void cancel() {
             task.cancel();
         }

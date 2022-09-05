@@ -67,7 +67,7 @@ CREATE INDEX `{prefix}properties_id` ON `{prefix}properties` (`property_id`);
 
 CREATE TABLE `{prefix}game_strategies` (
   `strategy_id` int(10) UNSIGNED NOT NULL,
-  `game` int(10) UNSIGNED NOT NULL COMMENT 'Game id',
+  `game` smallint(5) UNSIGNED NULL COMMENT 'Game id',
   `profile` int(10) UNSIGNED NOT NULL COMMENT 'Profile id'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Game profiles strategies';
 CREATE INDEX `{prefix}games_strategies` ON `{prefix}game_strategies` (`game`);

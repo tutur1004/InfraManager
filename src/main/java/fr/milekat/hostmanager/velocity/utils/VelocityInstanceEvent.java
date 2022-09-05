@@ -16,66 +16,53 @@ public class VelocityInstanceEvent implements EventCaller {
         this.server = server;
     }
 
+    /**
+     * Create a new InstanceEvent for Velocity events
+     */
+    @Override
     public InstanceEvent callEvent(CommonEvent.EventName eventName, Instance instance) {
         return new InstanceEvent(server, eventName, instance);
     }
 
     static class InstanceEvent implements CommonEvent {
-        private final EventName eventName;
-
-        private ServerCreatedEvent serverCreatedEvent;
-        private ServerDeletionEvent serverDeletionEvent;
+        private ResultedEvent<ResultedEvent.GenericResult> event;
 
         public InstanceEvent(ProxyServer server, EventName eventName, Instance instance) {
-            this.eventName = eventName;
             switch (eventName) {
                 case ServerCreatedEvent: {
-                    serverCreatedEvent = new ServerCreatedEvent(instance);
-                    server.getEventManager().fire(serverCreatedEvent);
+                    event = new ServerCreatedEvent(instance);
+                    server.getEventManager().fire(event);
                     break;
                 }
                 case ServerDeletedEvent: {
-                    ServerDeletedEvent serverDeletedEvent = new ServerDeletedEvent(instance);
-                    server.getEventManager().fire(serverDeletedEvent);
+                    event = new ServerDeletedEvent(instance);
+                    server.getEventManager().fire(event);
                     break;
                 }
                 case ServerDeletionEvent: {
-                    serverDeletionEvent = new ServerDeletionEvent(instance);
-                    server.getEventManager().fire(serverDeletionEvent);
+                    event = new ServerDeletionEvent(instance);
+                    server.getEventManager().fire(event);
                     break;
                 }
             }
         }
 
+        /**
+         * Set the event result
+         */
         @Override
         public void setCancel(boolean cancel) {
-            switch (eventName) {
-                case ServerCreatedEvent: {
-                    serverCreatedEvent.setResult(cancel ?
-                            ResultedEvent.GenericResult.denied() :
-                            ResultedEvent.GenericResult.allowed());
-                    break;
-                }
-                case ServerDeletionEvent: {
-                    serverDeletionEvent.setResult(cancel ?
-                            ResultedEvent.GenericResult.denied() :
-                            ResultedEvent.GenericResult.allowed());
-                    break;
-                }
-            }
+            event.setResult(cancel ?
+                    ResultedEvent.GenericResult.denied() :
+                    ResultedEvent.GenericResult.allowed());
         }
 
+        /**
+         * Check if event is cancelled
+         */
         @Override
         public boolean isCancelled() {
-            switch (eventName) {
-                case ServerCreatedEvent: {
-                    return !serverCreatedEvent.getResult().isAllowed();
-                }
-                case ServerDeletionEvent: {
-                    return !serverDeletionEvent.getResult().isAllowed();
-                }
-            }
-            return false;
+            return !event.getResult().isAllowed();
         }
     }
 }

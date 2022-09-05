@@ -7,8 +7,9 @@ import fr.milekat.hostmanager.common.storage.exeptions.StorageExecuteException;
 
 import java.util.concurrent.TimeUnit;
 
-public class HostRemover {
-    public HostRemover() {
+public class HostGarbageCollector {
+    // TODO: 05/09/2022 Implement more cases..
+    public HostGarbageCollector() {
         Main.schedule( () -> {
             try {
                 Main.getStorage()
@@ -17,7 +18,7 @@ public class HostRemover {
                         .filter(instance -> instance.getState().equals(InstanceState.ENDING))
                         .forEach(instance -> {
                             try {
-                                Main.getHosts().deleteServer(instance);
+                                Main.getHosts().deleteHost(instance);
                             } catch (HostExecuteException exception) {
                                 if (Main.DEBUG) {
                                     Main.getLogger().warn("Error while trying to delete: " +
@@ -32,6 +33,6 @@ public class HostRemover {
                     exception.printStackTrace();
                 }
             }
-        }, 0, 10, TimeUnit.SECONDS);
+        }, 1, 10, TimeUnit.SECONDS);
     }
 }

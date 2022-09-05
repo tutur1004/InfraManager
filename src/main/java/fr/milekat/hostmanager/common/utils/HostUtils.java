@@ -3,7 +3,7 @@ package fr.milekat.hostmanager.common.utils;
 import fr.milekat.hostmanager.api.classes.Instance;
 import fr.milekat.hostmanager.common.storage.exeptions.StorageExecuteException;
 
-public interface ServerUtils {
+public interface HostUtils {
     void reconnectAllPlayersToLobby(Instance instance);
 
     void resetHostList() throws StorageExecuteException;

@@ -1,7 +1,6 @@
 package fr.milekat.hostmanager.common;
 
 import fr.milekat.hostmanager.api.classes.Instance;
-import fr.milekat.hostmanager.common.hosts.HostExecutor;
 import fr.milekat.hostmanager.common.hosts.HostsManager;
 import fr.milekat.hostmanager.common.hosts.exeptions.HostExecuteException;
 import fr.milekat.hostmanager.common.storage.StorageExecutor;
@@ -13,7 +12,7 @@ import fr.milekat.hostmanager.common.utils.Task;
 import fr.milekat.hostmanager.common.utils.UtilsManager;
 import org.slf4j.Logger;
 
-import java.io.InputStream;
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
@@ -28,7 +27,7 @@ public class Main {
     private static HostsManager LOADED_HOSTS_MANAGER;
     private static UtilsManager utilsManagers;
 
-    public Main(Logger logger, InputStream configFile, UtilsManager utilsManager) {
+    public Main(Logger logger, File configFile, UtilsManager utilsManager) {
         mainLogger = logger;
         utilsManagers = utilsManager;
         config = new Configs(configFile);
@@ -83,8 +82,8 @@ public class Main {
      * Get Storage Database Executor
      * @return Storage executor
      */
-    public static HostExecutor getHosts() {
-        return LOADED_HOSTS_MANAGER.getHostExecutor();
+    public static HostsManager getHosts() {
+        return LOADED_HOSTS_MANAGER;
     }
 
     /**

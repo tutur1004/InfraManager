@@ -41,7 +41,7 @@ public class CreateServer implements SimpleCommand {
                         sender.sendMessage(Component.text("§cStorage error, you are not registered."));
                         return;
                     }
-                    Main.getHosts().createServer(new Instance(args[0], game, host));
+                    Main.getHosts().createHost(new Instance(args[0], game, host));
                     Main.getLogger().info(sender.getUsername() + " has created a new host.");
                     sender.sendMessage(Component.text("§aServer created ! Wait 5s for the first start..."));
                 } else if (args.length==3) {
@@ -55,7 +55,7 @@ public class CreateServer implements SimpleCommand {
                         sender.sendMessage(Component.text("§cUser not found."));
                         return;
                     }
-                    Main.getHosts().createServer(new Instance(args[0], game, host));
+                    Main.getHosts().createHost(new Instance(args[0], game, host));
                     Main.getLogger().info(sender.getUsername() + " has created a new host for " + args[2]);
                     sender.sendMessage(Component.text("§aServer created ! Wait 5s for the first start..."));
                 } else {

@@ -28,7 +28,7 @@ public class DeleteServer extends Command {
                         return;
                     }
                     sender.sendMessage(new TextComponent("Server id: " + instance.getServerId()));
-                    Main.getHosts().deleteServer(instance);
+                    Main.getHosts().deleteHost(instance);
                     sender.sendMessage(new TextComponent("Server deleted."));
                 } catch (StorageExecuteException exception) {
                     sender.sendMessage(new TextComponent("§cStorage error."));

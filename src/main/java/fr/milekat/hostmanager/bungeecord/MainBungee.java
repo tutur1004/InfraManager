@@ -9,21 +9,33 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 public class MainBungee extends Plugin {
     @Override
     @SuppressWarnings("all")
     public void onEnable() {
         Logger logger = LoggerFactory.getLogger("HostManager");
-        InputStream configFile = null;
-        try {
-            configFile = Files.newInputStream(new File(this.getDataFolder(), "config.yml").toPath());
-        } catch (IOException ignore) {
-            logger.warn("Can't load config.yml file, disabling plugin..");
-            this.onDisable();
+        File configFile = null;
+        File targetConfigFile = new File(this.getDataFolder().getPath(), "config.yml");
+        if (!targetConfigFile.exists()) {
+            try {
+                logger.info("Config file not found, trying to create it..");
+                File directory = this.getDataFolder();
+                if (! directory.exists()){
+                    directory.mkdir();
+                }
+                Files.copy(getClass().getResourceAsStream("/config.yml"),
+                        targetConfigFile.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException exception) {
+                logger.trace("Can't generate default config file.");
+                exception.printStackTrace();
+                this.onDisable();
+            }
         }
+        configFile = new File(this.getDataFolder().getPath(), "config.yml");
         if (configFile==null) {
             this.onDisable();
         } else {

@@ -32,7 +32,7 @@ public class DeleteServer implements SimpleCommand {
                             return;
                         }
                         sender.sendMessage(Component.text("Server id: " + instance.getServerId()));
-                        Main.getHosts().deleteServer(instance);
+                        Main.getHosts().deleteHost(instance);
                         sender.sendMessage(Component.text("Server deleted."));
                     } catch (StorageExecuteException exception) {
                         sender.sendMessage(Component.text("§cStorage error."));

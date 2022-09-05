@@ -37,7 +37,7 @@ public class CreateServer extends Command implements TabExecutor {
                     sender.sendMessage(new TextComponent("§cStorage error, you are not registered."));
                     return;
                 }
-                Main.getHosts().createServer(new Instance(args[0], game, host));
+                Main.getHosts().createHost(new Instance(args[0], game, host));
                 Main.getLogger().info(sender.getName() + " has created a new host.");
                 sender.sendMessage(new TextComponent("§aServer created ! Wait 5s for the first start..."));
             } else if (args.length==3) {
@@ -51,7 +51,7 @@ public class CreateServer extends Command implements TabExecutor {
                     sender.sendMessage(new TextComponent("§cUser not found."));
                     return;
                 }
-                Main.getHosts().createServer(new Instance(args[0], game, host));
+                Main.getHosts().createHost(new Instance(args[0], game, host));
                 Main.getLogger().info(sender.getName() + " has created a new host for " + args[2]);
                 sender.sendMessage(new TextComponent("§aServer created ! Wait 5s for the first start..."));
             } else {
