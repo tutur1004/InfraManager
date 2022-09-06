@@ -65,10 +65,8 @@ public class MySQLAdapter implements StorageExecutor {
             "WHERE props.enable=1 AND (prof.profile_name='global' OR (str.game=? AND prof.enable=1)) " +
             "ORDER BY props.profile DESC;";
 
-    private final String ADD_TICKETS = "INSERT INTO {prefix}users (uuid, last_name, tickets) " +
-            "VALUES (?,?,?) ON DUPLICATE KEY UPDATE last_name = ?, tickets = tickets + ?;";
-    private final String REMOVE_TICKETS = "INSERT INTO {prefix}users (uuid, last_name, tickets) " +
-            "VALUES (?,?,?) ON DUPLICATE KEY UPDATE last_name = ?, tickets = tickets - ?;";
+    private final String ADD_TICKETS = "UPDATE {prefix}users SET tickets = tickets + ? WHERE uuid=?;";
+    private final String REMOVE_TICKETS = "UPDATE {prefix}users SET tickets = tickets - ? WHERE uuid=?;";
     private final String CREATE_GAME = "INSERT INTO {prefix}games " +
             "(name, enable, image, requirements) " +
             "VALUES (?,?,?,?);";
@@ -85,6 +83,9 @@ public class MySQLAdapter implements StorageExecutor {
     private final String UPDATE_INSTANCE_STATE = "UPDATE {prefix}instances SET state=? WHERE instance_id = ?";
     private final String UPDATE_INSTANCE_ADDRESS = "UPDATE {prefix}instances " +
             "SET hostname=?, port=? WHERE instance_id = ?";
+    private final String UPDATE_USER = "UPDATE {prefix}users SET uuid=?, last_name=?, tickets=? WHERE uuid=?;";
+    private final String UPDATE_CREATE_USER = "INSERT INTO {prefix}users (uuid, last_name) " +
+            "VALUES (?,?) ON DUPLICATE KEY UPDATE last_name = ?;";
 
     /**
      * Format query by replacing {prefix} with {@link MySQLAdapter#PREFIX}
@@ -194,23 +195,32 @@ public class MySQLAdapter implements StorageExecutor {
     /**
      * Add tickets to this player
      * @param uuid player uuid
-     * @param username player minecraft username
      * @param amount amount of tickets to add to this player
      */
     @Override
-    public void addPlayerTickets(UUID uuid, String username, Integer amount) throws StorageExecuteException {
-        updateUser(uuid, username, amount, ADD_TICKETS);
+    public void addPlayerTickets(UUID uuid, Integer amount) throws StorageExecuteException {
+        updateUserTickets(uuid, amount, ADD_TICKETS);
     }
 
     /**
      * Remove tickets to this player
      * @param uuid player uuid
-     * @param username player minecraft username
      * @param amount amount of tickets to remove to this player
      */
     @Override
-    public void removePlayerTickets(UUID uuid, String username, Integer amount) throws StorageExecuteException {
-        updateUser(uuid, username, amount, REMOVE_TICKETS);
+    public void removePlayerTickets(UUID uuid, Integer amount) throws StorageExecuteException {
+        updateUserTickets(uuid, amount, REMOVE_TICKETS);
+    }
+
+    private void updateUserTickets(@NotNull UUID uuid, Integer amount, String query) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(query))) {
+            q.setInt(1, amount);
+            q.setString(2, uuid.toString());
+            q.execute();
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
+        }
     }
 
     /*
@@ -490,14 +500,46 @@ public class MySQLAdapter implements StorageExecutor {
         }
     }
 
-    private void updateUser(@NotNull UUID uuid, String username, Integer amount, String query) throws StorageExecuteException {
+    /**
+     * Create or Update user if exist
+     * @param uuid uuid of this user
+     * @param username last username known
+     */
+    @Override
+    public void updateUser(@NotNull UUID uuid, String username) throws StorageExecuteException {
         try (Connection connection = DB.getConnection();
-             PreparedStatement q = connection.prepareStatement(formatQuery(query))) {
+             PreparedStatement q = connection.prepareStatement(formatQuery(UPDATE_CREATE_USER))) {
+            q.setString(1, uuid.toString());
+            q.setString(2, username);
+            q.setString(3, username);
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
+        }
+    }
+
+    /**
+     * Update user (If exist)
+     * @param user profile
+     */
+    @Override
+    public void updateUser(@NotNull User user) throws StorageExecuteException {
+        updateUser(user.getUuid(), user.getLastName(), user.getTickets());
+    }
+
+    /**
+     * Update user (If exist)
+     * @param uuid profile
+     * @param username last username
+     * @param amount of tickets
+     */
+    @Override
+    public void updateUser(@NotNull UUID uuid, String username, Integer amount) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(UPDATE_USER))) {
             q.setString(1, uuid.toString());
             q.setString(2, username);
             q.setInt(3, amount);
-            q.setString(4, username);
-            q.setInt(5, amount);
+            q.setString(4, uuid.toString());
             q.execute();
         } catch (SQLException exception) {
             throw new StorageExecuteException(exception, exception.getSQLState());

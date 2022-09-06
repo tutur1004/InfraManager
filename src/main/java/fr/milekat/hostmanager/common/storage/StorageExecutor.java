@@ -39,18 +39,16 @@ public interface StorageExecutor {
     /**
      * Add tickets to this player
      * @param uuid player uuid
-     * @param username player minecraft username
      * @param amount amount of tickets to add to this player
      */
-    void addPlayerTickets(UUID uuid, String username, Integer amount) throws StorageExecuteException;
+    void addPlayerTickets(UUID uuid, Integer amount) throws StorageExecuteException;
 
     /**
      * Remove tickets to this player
      * @param uuid player uuid
-     * @param username player minecraft username
      * @param amount amount of tickets to remove to this player
      */
-    void removePlayerTickets(UUID uuid, String username, Integer amount) throws StorageExecuteException;
+    void removePlayerTickets(UUID uuid, Integer amount) throws StorageExecuteException;
 
     /*
         Games
@@ -162,6 +160,27 @@ public interface StorageExecutor {
      */
     @Nullable
     User getUser(UUID uuid) throws StorageExecuteException;
+
+    /**
+     * Create or Update user if exist
+     * @param uuid uuid of this user
+     * @param username last username known
+     */
+    void updateUser(@NotNull UUID uuid, String username) throws StorageExecuteException;
+
+    /**
+     * Update if exist a player
+     * @param user profile
+     */
+    void updateUser(@NotNull User user) throws StorageExecuteException;
+
+    /**
+     * Update user (If exist)
+     * @param uuid profile
+     * @param username last username
+     * @param amount of tickets
+     */
+    void updateUser(@NotNull UUID uuid, String username, Integer amount) throws StorageExecuteException;
 
     /*
         Logs

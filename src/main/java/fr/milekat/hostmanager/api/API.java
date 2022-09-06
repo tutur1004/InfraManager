@@ -25,8 +25,16 @@ public class API {
      * Add tickets to player
      * @param uuid {@link UUID}
      */
-    public static void addPlayerTickets(UUID uuid, String playerName, Integer amount) throws StorageExecuteException {
-        EXECUTOR.addPlayerTickets(uuid, playerName, amount);
+    public static void addPlayerTickets(UUID uuid, Integer amount) throws StorageExecuteException {
+        EXECUTOR.addPlayerTickets(uuid, amount);
+    }
+
+    /**
+     * Add tickets to player
+     * @param uuid {@link UUID}
+     */
+    public static void removePlayerTickets(UUID uuid, Integer amount) throws StorageExecuteException {
+        EXECUTOR.removePlayerTickets(uuid, amount);
     }
 
     /**
