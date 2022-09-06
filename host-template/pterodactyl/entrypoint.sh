@@ -6,6 +6,7 @@ echo "Loading host server with game ${GAME} in version ${VERSION}"
 echo "Copy game data content to container workdir"
 cp -r /home/data/* /home/container/
 # Copy game version content to minecraft plugins directory
+mkdir /home/minecraft/plugins/
 echo "Copy version plugins into container plugins directory"
 cp -r /data/"$GAME"/"$VERSION"/plugins/* /home/minecraft/plugins/
 cd /home/container || echo "Container error, workdir not found"

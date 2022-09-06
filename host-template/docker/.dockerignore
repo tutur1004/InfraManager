@@ -1,0 +1,16 @@
+/container/start.sh
+
+/container/logs
+/container/world*
+
+/container/banned-ips.json
+/container/banned-players.json
+/container/ops.json
+/container/usercache.json
+/container/whitelist.json
+
+/container/commands.yml
+/container/help.yml
+/container/permissions.yml
+
+/container/plugins/PluginMetrics
