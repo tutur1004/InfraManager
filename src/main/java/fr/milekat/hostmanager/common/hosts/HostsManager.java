@@ -1,7 +1,9 @@
 package fr.milekat.hostmanager.common.hosts;
 
+import fr.milekat.hostmanager.api.classes.Game;
 import fr.milekat.hostmanager.api.classes.Instance;
 import fr.milekat.hostmanager.api.classes.InstanceState;
+import fr.milekat.hostmanager.api.classes.User;
 import fr.milekat.hostmanager.common.Main;
 import fr.milekat.hostmanager.common.hosts.adapter.docker.DockerAdapter;
 import fr.milekat.hostmanager.common.hosts.adapter.pterodactyl.PterodactylAdapter;
@@ -11,6 +13,9 @@ import fr.milekat.hostmanager.common.storage.exeptions.StorageExecuteException;
 import fr.milekat.hostmanager.common.utils.CommonEvent;
 import fr.milekat.hostmanager.common.utils.Configs;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Date;
+import java.util.UUID;
 
 public class HostsManager {
     private final HostExecutor hostExecutor;
@@ -37,6 +42,7 @@ public class HostsManager {
         }
         //  Init messaging feature
         // TODO: 05/09/2022 Messaging feature
+
         //  Worker to remove "ghost"/"unused" hosts
         new HostGarbageCollector();
     }
@@ -45,26 +51,26 @@ public class HostsManager {
         return hostExecutor;
     }
 
-    public void createHost(Instance instance) throws HostExecuteException, StorageExecuteException {
-        if (instance.getPort()==0) {
-            Integer port = Utils.getAvailablePort();
-            if (port!=null) {
-                instance.setPort(port);
-            } else {
-                Main.getLogger().warn("No port available.");
-                throw new HostExecuteException("No port available.");
-            }
+    public void createHost(Game game, User user) throws HostExecuteException, StorageExecuteException {
+        Instance instance = new Instance(UUID.randomUUID().toString(), game, user);
+        Integer port = Utils.getAvailablePort();
+        if (port!=null) {
+            instance.setPort(port);
+        } else {
+            Main.getLogger().warn("No port available.");
+            throw new HostExecuteException("No port available.");
         }
-        // TODO: 05/09/2022 Storage first, to have id
-
+        instance.setState(InstanceState.CREATING);
+        //  Add this new instance to storage
+        instance = Main.getStorage().createInstance(instance);
+        //  Update the name with SQL id and game name
+        instance.setName(Main.HOST_PROXY_SERVER_PREFIX + game.getName() + "-" + instance.getId());
         //  Create the server in the provider
         getHostExecutor().createServer(instance);
         //  Add this new instance to storage
-        instance.setState(InstanceState.CREATING);
-        Main.getStorage().createInstance(instance);
+        Main.getStorage().updateInstance(instance);
         //  Add this new instance to the proxy server list
-        Main.getUtilsManager().getHostUtils().addServer(Main.HOST_PROXY_SERVER_PREFIX +
-                instance.getName(), instance.getPort());
+        Main.getUtilsManager().getHostUtils().addServer(instance.getName(), instance.getHostname(), instance.getPort());
         //  Call the ServerCreatedEvent custom event !
         Main.callEvent(CommonEvent.EventName.ServerCreatedEvent, instance);
     }
@@ -89,13 +95,13 @@ public class HostsManager {
         if (deletionEvent.isCancelled()) return;
         //  Reconnect all players from the host to the lobby, and delete the host
         Main.getUtilsManager().getHostUtils().reconnectAllPlayersToLobby(instance);
-        Main.getUtilsManager().getHostUtils()
-                .removeServer(Main.HOST_PROXY_SERVER_PREFIX + instance.getName());
+        Main.getUtilsManager().getHostUtils().removeServer(instance.getName());
         //  Delete the server from the provider
         getHostExecutor().deleteServer(instance);
         //  Update this instance in the storage
         try {
             instance.setState(InstanceState.TERMINATED);
+            instance.setDeletion(new Date());
             Main.getStorage().updateInstance(instance);
         } catch (StorageExecuteException exception) {
             throw new HostExecuteException(exception, "Can't update storage after server deletion");

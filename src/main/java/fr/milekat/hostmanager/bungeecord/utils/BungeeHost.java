@@ -43,8 +43,8 @@ public class BungeeHost implements HostUtils {
     @Override
     public void resetHostList() throws StorageExecuteException {
         removeServersPrefix(Main.HOST_PROXY_SERVER_PREFIX);
-        for (Instance server : Main.getStorage().getActiveInstances()) {
-            addServer(Main.HOST_PROXY_SERVER_PREFIX + server.getName(), server.getPort());
+        for (Instance instance : Main.getStorage().getActiveInstances()) {
+            addServer(instance.getName(), instance.getHostname(), instance.getPort());
         }
     }
 
@@ -52,9 +52,8 @@ public class BungeeHost implements HostUtils {
      * Add a server to bungee server list
      */
     @Override
-    public void addServer(String name, int port) {
-        InetSocketAddress ipAddress =
-                new InetSocketAddress(Main.getConfig().getString("host.settings.host"), port);
+    public void addServer(String name, String hostname, int port) {
+        InetSocketAddress ipAddress = new InetSocketAddress(hostname, port);
         ServerInfo serverInfo = ProxyServer.getInstance()
                 .constructServerInfo(name, ipAddress, null, false);
         ProxyServer.getInstance().getServers().put(name, serverInfo);

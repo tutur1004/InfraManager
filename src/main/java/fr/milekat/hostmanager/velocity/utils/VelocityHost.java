@@ -48,8 +48,8 @@ public class VelocityHost implements HostUtils {
     @Override
     public void resetHostList() throws StorageExecuteException {
         removeServersPrefix(Main.HOST_PROXY_SERVER_PREFIX);
-        for (Instance server : Main.getStorage().getActiveInstances()) {
-            addServer(Main.HOST_PROXY_SERVER_PREFIX + server.getName(), server.getPort());
+        for (Instance instance : Main.getStorage().getActiveInstances()) {
+            addServer(instance.getName(), instance.getHostname(), instance.getPort());
         }
     }
 
@@ -57,9 +57,8 @@ public class VelocityHost implements HostUtils {
      * Add a server to velocity server list
      */
     @Override
-    public void addServer(String name, int port) {
-        InetSocketAddress ipAddress =
-                new InetSocketAddress(Main.getConfig().getString("host.settings.host"), port);
+    public void addServer(String name, String hostname, int port) {
+        InetSocketAddress ipAddress = new InetSocketAddress(hostname, port);
         server.registerServer(new ServerInfo(name, ipAddress));
     }
 

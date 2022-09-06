@@ -4,7 +4,6 @@ import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.command.SimpleCommand;
 import com.velocitypowered.api.proxy.Player;
 import fr.milekat.hostmanager.api.classes.Game;
-import fr.milekat.hostmanager.api.classes.Instance;
 import fr.milekat.hostmanager.api.classes.User;
 import fr.milekat.hostmanager.common.Main;
 import fr.milekat.hostmanager.common.hosts.exeptions.HostExecuteException;
@@ -36,12 +35,12 @@ public class CreateServer implements SimpleCommand {
                         sender.sendMessage(Component.text("§cThis game is invalid or disable."));
                         return;
                     }
-                    User host = Main.getStorage().getUser(sender.getUniqueId());
-                    if (host==null) {
+                    User user = Main.getStorage().getUser(sender.getUniqueId());
+                    if (user==null) {
                         sender.sendMessage(Component.text("§cStorage error, you are not registered."));
                         return;
                     }
-                    Main.getHosts().createHost(new Instance(args[0], game, host));
+                    Main.getHosts().createHost(game, user);
                     Main.getLogger().info(sender.getUsername() + " has created a new host.");
                     sender.sendMessage(Component.text("§aServer created ! Wait 5s for the first start..."));
                 } else if (args.length==3) {
@@ -50,12 +49,12 @@ public class CreateServer implements SimpleCommand {
                         sender.sendMessage(Component.text("§cThis game is invalid or disable."));
                         return;
                     }
-                    User host = Main.getStorage().getUser(args[2]);
-                    if (host==null) {
+                    User user = Main.getStorage().getUser(args[2]);
+                    if (user==null) {
                         sender.sendMessage(Component.text("§cUser not found."));
                         return;
                     }
-                    Main.getHosts().createHost(new Instance(args[0], game, host));
+                    Main.getHosts().createHost(game, user);
                     Main.getLogger().info(sender.getUsername() + " has created a new host for " + args[2]);
                     sender.sendMessage(Component.text("§aServer created ! Wait 5s for the first start..."));
                 } else {

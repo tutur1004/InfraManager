@@ -8,7 +8,7 @@ public interface HostUtils {
 
     void resetHostList() throws StorageExecuteException;
 
-    void addServer(String name, int port);
+    void addServer(String name, String hostname, int port);
 
     void removeServer(String name);
 

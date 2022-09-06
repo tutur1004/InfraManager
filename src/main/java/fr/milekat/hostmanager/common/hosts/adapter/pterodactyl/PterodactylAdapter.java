@@ -4,6 +4,7 @@ import fr.milekat.hostmanager.api.classes.Instance;
 import fr.milekat.hostmanager.common.Main;
 import fr.milekat.hostmanager.common.hosts.HostExecutor;
 import fr.milekat.hostmanager.common.hosts.exeptions.HostExecuteException;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.text.ParseException;
@@ -43,7 +44,7 @@ public class PterodactylAdapter implements HostExecutor {
      * @param instance server params
      */
     @Override
-    public void createServer(Instance instance) throws HostExecuteException {
+    public void createServer(@NotNull Instance instance) throws HostExecuteException {
         JSONObject server = PterodactylRequests.setupServer(instance);
         if (server.has("attributes")) {
             JSONObject attributes = server.getJSONObject("attributes");
@@ -75,7 +76,7 @@ public class PterodactylAdapter implements HostExecutor {
      * @param instance server params
      */
     @Override
-    public void deleteServer(Instance instance) throws HostExecuteException {
+    public void deleteServer(@NotNull Instance instance) throws HostExecuteException {
         try {
             PterodactylRequests.deleteServer(instance);
         } catch (HostExecuteException exception) {

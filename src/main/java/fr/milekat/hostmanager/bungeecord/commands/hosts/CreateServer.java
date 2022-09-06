@@ -1,7 +1,6 @@
 package fr.milekat.hostmanager.bungeecord.commands.hosts;
 
 import fr.milekat.hostmanager.api.classes.Game;
-import fr.milekat.hostmanager.api.classes.Instance;
 import fr.milekat.hostmanager.api.classes.User;
 import fr.milekat.hostmanager.common.Main;
 import fr.milekat.hostmanager.common.hosts.exeptions.HostExecuteException;
@@ -32,12 +31,12 @@ public class CreateServer extends Command implements TabExecutor {
                     sender.sendMessage(new TextComponent("§cThis game is invalid or disable."));
                     return;
                 }
-                User host = Main.getStorage().getUser(((ProxiedPlayer) sender).getUniqueId());
-                if (host==null) {
+                User user = Main.getStorage().getUser(((ProxiedPlayer) sender).getUniqueId());
+                if (user==null) {
                     sender.sendMessage(new TextComponent("§cStorage error, you are not registered."));
                     return;
                 }
-                Main.getHosts().createHost(new Instance(args[0], game, host));
+                Main.getHosts().createHost(game, user);
                 Main.getLogger().info(sender.getName() + " has created a new host.");
                 sender.sendMessage(new TextComponent("§aServer created ! Wait 5s for the first start..."));
             } else if (args.length==3) {
@@ -46,12 +45,12 @@ public class CreateServer extends Command implements TabExecutor {
                     sender.sendMessage(new TextComponent("§cThis game is invalid or disable."));
                     return;
                 }
-                User host = Main.getStorage().getUser(args[2]);
-                if (host==null) {
+                User user = Main.getStorage().getUser(args[2]);
+                if (user==null) {
                     sender.sendMessage(new TextComponent("§cUser not found."));
                     return;
                 }
-                Main.getHosts().createHost(new Instance(args[0], game, host));
+                Main.getHosts().createHost(game, user);
                 Main.getLogger().info(sender.getName() + " has created a new host for " + args[2]);
                 sender.sendMessage(new TextComponent("§aServer created ! Wait 5s for the first start..."));
             } else {

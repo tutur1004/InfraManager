@@ -1,5 +1,6 @@
 package fr.milekat.hostmanager.common.utils;
 
+import fr.milekat.hostmanager.common.Main;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +34,9 @@ public class Configs {
             }
             return valueNode;
         } catch (IOException ignored) {
+            if (Main.DEBUG) {
+                Main.getLogger().warn("Config node not found: " + node);
+            }
             return null;
         }
     }

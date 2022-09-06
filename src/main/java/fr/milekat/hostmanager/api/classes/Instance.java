@@ -12,7 +12,7 @@ public class Instance {
     private int port;
     private InstanceState state;
     private final Game game;
-    private final User host;
+    private final User user;
     private Date creation;
     private Date deletion = null;
 
@@ -22,19 +22,19 @@ public class Instance {
         this.description = null;
         this.serverId = serverId;
         this.game = null;
-        this.host = null;
+        this.user = null;
     }
 
-    public Instance(String name, Game game, User host) {
+    public Instance(String name, Game game, User user) {
         this.id = null;
         this.name = name;
-        this.description = "Server created by: " + host.getLastName();
+        this.description = "Server created by: " + user.getLastName();
         this.game = game;
-        this.host = host;
+        this.user = user;
     }
 
     public Instance(Integer id, String name, String serverId, String description, String message, String hostname,
-                    int port, InstanceState state, Game game, User host, Date creation, Date deletion) {
+                    int port, InstanceState state, Game game, User user, Date creation, Date deletion) {
         this.id = id;
         this.name = name;
         this.serverId = serverId;
@@ -44,7 +44,7 @@ public class Instance {
         this.port = port;
         this.state = state;
         this.game = game;
-        this.host = host;
+        this.user = user;
         this.creation = creation;
         this.deletion = deletion;
     }
@@ -109,8 +109,8 @@ public class Instance {
         return game;
     }
 
-    public User getHost() {
-        return host;
+    public User getUser() {
+        return user;
     }
 
     public Date getCreation() {

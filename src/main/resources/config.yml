@@ -17,12 +17,10 @@ host:
     # List of bungee server name considered as lobby servers
     lobby-name:
     - lobby
-    # Servers hostname
-    host: 192.168.0.1
     # Port list (You should put 1 port per instance)
     ports: [25565, 25566]
     # Support Docker or Pterodactyl. ! Obviously, only one provider can be set !
-    provider: pterodactyl
+    provider: docker
     # Do not modify if you don't know how it's work
     command: "java -Xms${MIN_MEMORY} -Xmx${MAX_MEMORY}
       -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions 
@@ -42,8 +40,12 @@ host:
   docker:
     # Your proxy should have access to a valid docker socket (Be careful of security issues !!)
     endpoint: "unix:///var/run/docker.sock"
-    # Network id - Should be used in proxy server
-    network-id: "YOUR DOCKER NETWORK ID"
+    # List of your networks needed for your hosts (All hosts will have these networks)
+    networks-id:
+    - "YOUR DOCKER NETWORK ID"
+    - "YOUR DOCKER NETWORK ID"
+    # Name of your proxy network
+    network-name: "minecraft-network"
   pterodactyl:
     # Your full panel URL (With http/https)
     endpoint: "https://your.panel.url"

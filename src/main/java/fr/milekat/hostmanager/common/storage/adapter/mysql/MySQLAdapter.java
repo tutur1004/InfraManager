@@ -71,18 +71,22 @@ public class MySQLAdapter implements StorageExecutor {
             "(name, enable, image, requirements) " +
             "VALUES (?,?,?,?);";
     private final String CREATE_INSTANCE = "INSERT INTO {prefix}instances " +
-            "(instance_name, instance_description, instance_server_id, hostname, port, state, game, user, creation) " +
-            "VALUES (?,?,?,?,?,?,?,?,?);";
+            "(instance_name, instance_description, port, game, user) VALUES (?,?,?,?,?);";
 
     private final String UPDATE_GAME = "UPDATE {prefix}games " +
             "SET name=?, enable=?, image=?, requirements=?";
-    private final String UPDATE_INSTANCE = "UPDATE {prefix}instances " +
-            "SET instance_server_id=?, state=?, game=?, user=? " +
-            "WHERE instance_name = ?";
+    private final String UPDATE_INSTANCE_FULL = "UPDATE {prefix}instances " +
+            "SET instance_name=?, instance_server_id=?, instance_description=?, instance_message=?, " +
+            "hostname=?, port=?, state=?, game=?, user=? " +
+            "WHERE instance_id = ?";
     private final String UPDATE_INSTANCE_NAME = "UPDATE {prefix}instances SET instance_name=? WHERE instance_id = ?";
     private final String UPDATE_INSTANCE_STATE = "UPDATE {prefix}instances SET state=? WHERE instance_id = ?";
     private final String UPDATE_INSTANCE_ADDRESS = "UPDATE {prefix}instances " +
             "SET hostname=?, port=? WHERE instance_id = ?";
+    private final String UPDATE_INSTANCE_CREATION = "UPDATE {prefix}instances " +
+            "SET creation=? WHERE instance_id = ?";
+    private final String UPDATE_INSTANCE_DELETION = "UPDATE {prefix}instances " +
+            "SET deletion=? WHERE instance_id = ?";
     private final String UPDATE_USER = "UPDATE {prefix}users SET uuid=?, last_name=?, tickets=? WHERE uuid=?;";
     private final String UPDATE_CREATE_USER = "INSERT INTO {prefix}users (uuid, last_name) " +
             "VALUES (?,?) ON DUPLICATE KEY UPDATE last_name = ?;";
@@ -350,19 +354,16 @@ public class MySQLAdapter implements StorageExecutor {
     }
 
     @Override
-    public void createInstance(@NotNull Instance instance) throws StorageExecuteException {
+    public Instance createInstance(@NotNull Instance instance) throws StorageExecuteException {
         try (Connection connection = DB.getConnection();
              PreparedStatement q = connection.prepareStatement(formatQuery(CREATE_INSTANCE))) {
             q.setString(1, instance.getName());
             q.setString(2, instance.getDescription());
-            q.setString(3, instance.getServerId());
-            q.setString(4, instance.getHostname());
-            q.setInt(5, instance.getPort());
-            q.setInt(6, instance.getState().getStateId());
-            q.setInt(7, instance.getGame().getId());
-            q.setInt(8, instance.getHost().getId());
-            q.setTimestamp(9, new Timestamp(instance.getCreation().getTime()));
+            q.setInt(3, instance.getPort());
+            q.setInt(4, instance.getGame().getId());
+            q.setInt(5, instance.getUser().getId());
             q.execute();
+            return getInstance(instance.getName());
         } catch (SQLException exception) {
             throw new StorageExecuteException(exception, exception.getSQLState());
         }
@@ -371,12 +372,17 @@ public class MySQLAdapter implements StorageExecutor {
     @Override
     public void updateInstance(@NotNull Instance instance) throws StorageExecuteException {
         try (Connection connection = DB.getConnection();
-             PreparedStatement q = connection.prepareStatement(formatQuery(UPDATE_INSTANCE))) {
-            q.setString(1, instance.getServerId());
-            q.setInt(2, instance.getState().getStateId());
-            q.setInt(3, instance.getGame().getId());
-            q.setInt(4, instance.getHost().getId());
-            q.setString(5, instance.getName());
+             PreparedStatement q = connection.prepareStatement(formatQuery(UPDATE_INSTANCE_FULL))) {
+            q.setString(1, instance.getName());
+            q.setString(2, instance.getServerId());
+            q.setString(3, instance.getDescription());
+            q.setString(4, instance.getMessage());
+            q.setString(5, instance.getHostname());
+            q.setInt(6, instance.getPort());
+            q.setInt(7, instance.getState().getStateId());
+            q.setInt(8, instance.getGame().getId());
+            q.setInt(9, instance.getUser().getId());
+            q.setInt(10, instance.getId());
             q.execute();
         } catch (SQLException exception) {
             throw new StorageExecuteException(exception, exception.getSQLState());
@@ -414,6 +420,32 @@ public class MySQLAdapter implements StorageExecutor {
             q.setString(1, instance.getHostname());
             q.setInt(2, instance.getPort());
             q.setInt(3, instance.getId());
+            q.execute();
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
+        }
+    }
+
+    @Override
+    public void updateInstanceCreation(@NotNull Instance instance) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(UPDATE_INSTANCE_CREATION))) {
+            if (instance.getCreation()==null) return;
+            q.setTimestamp(1, new Timestamp(instance.getCreation().getTime()));
+            q.setInt(2, instance.getId());
+            q.execute();
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
+        }
+    }
+
+    @Override
+    public void updateInstanceDeletion(@NotNull Instance instance) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(UPDATE_INSTANCE_DELETION))) {
+            if (instance.getDeletion()==null) return;
+            q.setTimestamp(1, new Timestamp(instance.getDeletion().getTime()));
+            q.setInt(2, instance.getId());
             q.execute();
         } catch (SQLException exception) {
             throw new StorageExecuteException(exception, exception.getSQLState());
@@ -512,6 +544,7 @@ public class MySQLAdapter implements StorageExecutor {
             q.setString(1, uuid.toString());
             q.setString(2, username);
             q.setString(3, username);
+            q.execute();
         } catch (SQLException exception) {
             throw new StorageExecuteException(exception, exception.getSQLState());
         }
@@ -599,6 +632,14 @@ public class MySQLAdapter implements StorageExecutor {
      */
     @Contract("_ -> new")
     private @NotNull Instance resultSetToInstance(@NotNull ResultSet r) throws SQLException {
+        Date creation = null;
+        Date deletion = null;
+        if (r.getTimestamp("creation")!=null) {
+            creation = new Date(r.getTimestamp("creation").getTime());
+        }
+        if (r.getTimestamp("deletion")!=null) {
+            deletion = new Date(r.getTimestamp("deletion").getTime());
+        }
         return new Instance(r.getInt("instance_id"),
                 r.getString("instance_name"),
                 r.getString("instance_server_id"),
@@ -609,8 +650,8 @@ public class MySQLAdapter implements StorageExecutor {
                 InstanceState.fromInteger(r.getInt("state")),
                 resultSetToGame(r),
                 resultSetToUser(r),
-                new Date(r.getTimestamp("creation").getTime()),
-                new Date(r.getTimestamp("deletion").getTime())
+                creation,
+                deletion
         );
     }
 

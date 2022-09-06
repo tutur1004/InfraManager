@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static final String HOST_UUID_ENV_VAR_NAME = "HOST_UUID";
-    public static final String HOST_PROXY_SERVER_PREFIX = "host:";
+    public static final String HOST_PROXY_SERVER_PREFIX = "host-";
     public static final String MESSAGE_CHANNEL = "host:channel";
 
     public static Boolean DEBUG = false;

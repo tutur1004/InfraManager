@@ -1,6 +1,7 @@
 package fr.milekat.hostmanager.bungeecord;
 
 import fr.milekat.hostmanager.bungeecord.commands.BungeeCommands;
+import fr.milekat.hostmanager.bungeecord.listeners.PlayerJoin;
 import fr.milekat.hostmanager.bungeecord.utils.BungeeUtilsManager;
 import fr.milekat.hostmanager.common.Main;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -41,6 +42,7 @@ public class MainBungee extends Plugin {
         } else {
             new Main(logger, configFile, new BungeeUtilsManager(this));
             new BungeeCommands(this);
+            getProxy().getPluginManager().registerListener(this, new PlayerJoin());
         }
     }
 

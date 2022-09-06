@@ -103,7 +103,7 @@ public interface StorageExecutor {
     /**
      * Create a new instance
      */
-    void createInstance(Instance instance) throws StorageExecuteException;
+    Instance createInstance(Instance instance) throws StorageExecuteException;
 
     /**
      * Save an instance
@@ -127,6 +127,18 @@ public interface StorageExecutor {
      * @param instance should contain at least {@link Instance#getId()}
      */
     void updateInstanceAddress(@NotNull Instance instance) throws StorageExecuteException;
+
+    /**
+     * Update {@link Instance#getCreation()}
+     * @param instance should contain at least {@link Instance#getId()}
+     */
+    void updateInstanceCreation(@NotNull Instance instance) throws StorageExecuteException;
+
+    /**
+     * Update {@link Instance#getDeletion()}
+     * @param instance should contain at least {@link Instance#getId()}
+     */
+    void updateInstanceDeletion(@NotNull Instance instance) throws StorageExecuteException;
 
     /**
      * Find an available port in given list

@@ -9,6 +9,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import fr.milekat.hostmanager.common.Main;
 import fr.milekat.hostmanager.velocity.commands.VelocityCommands;
+import fr.milekat.hostmanager.velocity.listeners.PlayerJoin;
 import fr.milekat.hostmanager.velocity.utils.VelocityUtilsManager;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -62,5 +63,6 @@ public class MainVelocity {
     @SuppressWarnings("all")
     public void onProxyInitialization(ProxyInitializeEvent event) {
         new Main(logger, configFile, new VelocityUtilsManager(this, server));
+        server.getEventManager().register(this, new PlayerJoin());
     }
 }

@@ -3,6 +3,7 @@ package fr.milekat.hostmanager.common.hosts;
 import fr.milekat.hostmanager.api.classes.Instance;
 import fr.milekat.hostmanager.common.hosts.exeptions.HostExecuteException;
 import fr.milekat.hostmanager.common.storage.exeptions.StorageExecuteException;
+import org.jetbrains.annotations.NotNull;
 
 public interface HostExecutor {
     /**
@@ -13,10 +14,10 @@ public interface HostExecutor {
     /**
      * Create a new server instance in provider
      */
-    void createServer(Instance instance) throws HostExecuteException, StorageExecuteException;
+    void createServer(@NotNull Instance instance) throws HostExecuteException, StorageExecuteException;
 
     /**
      * Delete an existing server instance from provider
      */
-    void deleteServer(Instance instance) throws HostExecuteException;
+    void deleteServer(@NotNull Instance instance) throws HostExecuteException;
 }
