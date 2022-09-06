@@ -5,6 +5,7 @@ import fr.milekat.hostmanager.api.classes.Instance;
 import fr.milekat.hostmanager.api.classes.Log;
 import fr.milekat.hostmanager.api.classes.User;
 import fr.milekat.hostmanager.common.storage.exeptions.StorageExecuteException;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
@@ -110,6 +111,24 @@ public interface StorageExecutor {
      * Save an instance
      */
     void updateInstance(Instance instance) throws StorageExecuteException;
+
+    /**
+     * Update {@link Instance#getName()}
+     * @param instance should contain at least {@link Instance#getId()}
+     */
+    void updateInstanceName(@NotNull Instance instance) throws StorageExecuteException;
+
+    /**
+     * Update {@link Instance#getState()}
+     * @param instance should contain at least {@link Instance#getId()}
+     */
+    void updateInstanceState(@NotNull Instance instance) throws StorageExecuteException;
+
+    /**
+     * Update {@link Instance#getHostname()} & {@link Instance#getPort()}
+     * @param instance should contain at least {@link Instance#getId()}
+     */
+    void updateInstanceAddress(@NotNull Instance instance) throws StorageExecuteException;
 
     /**
      * Find an available port in given list

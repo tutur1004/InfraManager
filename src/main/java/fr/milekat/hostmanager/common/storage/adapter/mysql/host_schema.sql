@@ -23,6 +23,7 @@ CREATE TABLE `{prefix}instances` (
   `instance_server_id` varchar(36) DEFAULT NULL COMMENT 'Id of instance server',
   `instance_description` varchar(128) NOT NULL COMMENT 'Instance description',
   `instance_message` longtext NULL COMMENT 'Custom instance message',
+  `hostname` VARCHAR(64) NOT NULL DEFAULT 'localhost' COMMENT 'Hostname of your instance',
   `port` smallint(5) NOT NULL COMMENT 'Instance port',
   `state` tinyint(1) NOT NULL DEFAULT 1 COMMENT 'Game state\n0: Creating\n1: Ready\n2: In progress\n3: Ending\n4: Terminated',
   `game` smallint(5) UNSIGNED NULL COMMENT 'Game of this instance',

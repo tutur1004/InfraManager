@@ -24,7 +24,8 @@ public class MySQLAdapter implements StorageExecutor {
     private final long CACHE_DURATION = TimeUnit.MILLISECONDS.convert(30L, TimeUnit.MINUTES);
     private final MySQLPool DB;
     private final String PREFIX = Main.getConfig().getString("storage.mysql.prefix");
-    private final List<String> TABLES = Arrays.asList(PREFIX + "games", PREFIX + "instances", PREFIX + "logs", PREFIX + "users");
+    private final List<String> TABLES = Arrays.asList(PREFIX + "games", PREFIX + "instances", PREFIX + "logs",
+            PREFIX + "users", PREFIX + "profiles", PREFIX + "properties", PREFIX + "game_strategies");
     private Date CACHED_GAMES_REFRESH = null;
     private List<Game> CACHED_GAMES = new ArrayList<>();
 
@@ -72,14 +73,18 @@ public class MySQLAdapter implements StorageExecutor {
             "(name, enable, image, requirements) " +
             "VALUES (?,?,?,?);";
     private final String CREATE_INSTANCE = "INSERT INTO {prefix}instances " +
-            "(instance_name, instance_description, instance_server_id, port, state, game, user, creation) " +
-            "VALUES (?,?,?,?,?,?,?,?);";
+            "(instance_name, instance_description, instance_server_id, hostname, port, state, game, user, creation) " +
+            "VALUES (?,?,?,?,?,?,?,?,?);";
 
     private final String UPDATE_GAME = "UPDATE {prefix}games " +
             "SET name=?, enable=?, image=?, requirements=?";
     private final String UPDATE_INSTANCE = "UPDATE {prefix}instances " +
             "SET instance_server_id=?, state=?, game=?, user=? " +
             "WHERE instance_name = ?";
+    private final String UPDATE_INSTANCE_NAME = "UPDATE {prefix}instances SET instance_name=? WHERE instance_id = ?";
+    private final String UPDATE_INSTANCE_STATE = "UPDATE {prefix}instances SET state=? WHERE instance_id = ?";
+    private final String UPDATE_INSTANCE_ADDRESS = "UPDATE {prefix}instances " +
+            "SET hostname=?, port=? WHERE instance_id = ?";
 
     /**
      * Format query by replacing {prefix} with {@link MySQLAdapter#PREFIX}
@@ -341,11 +346,12 @@ public class MySQLAdapter implements StorageExecutor {
             q.setString(1, instance.getName());
             q.setString(2, instance.getDescription());
             q.setString(3, instance.getServerId());
-            q.setInt(4, instance.getPort());
-            q.setInt(5, instance.getState().getStateId());
-            q.setInt(6, instance.getGame().getId());
-            q.setInt(7, instance.getHost().getId());
-            q.setTimestamp(8, new Timestamp(instance.getCreation().getTime()));
+            q.setString(4, instance.getHostname());
+            q.setInt(5, instance.getPort());
+            q.setInt(6, instance.getState().getStateId());
+            q.setInt(7, instance.getGame().getId());
+            q.setInt(8, instance.getHost().getId());
+            q.setTimestamp(9, new Timestamp(instance.getCreation().getTime()));
             q.execute();
         } catch (SQLException exception) {
             throw new StorageExecuteException(exception, exception.getSQLState());
@@ -361,6 +367,43 @@ public class MySQLAdapter implements StorageExecutor {
             q.setInt(3, instance.getGame().getId());
             q.setInt(4, instance.getHost().getId());
             q.setString(5, instance.getName());
+            q.execute();
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
+        }
+    }
+
+    @Override
+    public void updateInstanceName(@NotNull Instance instance) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(UPDATE_INSTANCE_NAME))) {
+            q.setString(1, instance.getName());
+            q.setInt(2, instance.getId());
+            q.execute();
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
+        }
+    }
+
+    @Override
+    public void updateInstanceState(@NotNull Instance instance) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(UPDATE_INSTANCE_STATE))) {
+            q.setInt(1, instance.getState().getStateId());
+            q.setInt(2, instance.getId());
+            q.execute();
+        } catch (SQLException exception) {
+            throw new StorageExecuteException(exception, exception.getSQLState());
+        }
+    }
+
+    @Override
+    public void updateInstanceAddress(@NotNull Instance instance) throws StorageExecuteException {
+        try (Connection connection = DB.getConnection();
+             PreparedStatement q = connection.prepareStatement(formatQuery(UPDATE_INSTANCE_ADDRESS))) {
+            q.setString(1, instance.getHostname());
+            q.setInt(2, instance.getPort());
+            q.setInt(3, instance.getId());
             q.execute();
         } catch (SQLException exception) {
             throw new StorageExecuteException(exception, exception.getSQLState());
@@ -519,6 +562,7 @@ public class MySQLAdapter implements StorageExecutor {
                 r.getString("instance_server_id"),
                 r.getString("instance_description"),
                 r.getString("instance_message"),
+                r.getString("hostname"),
                 r.getInt("port"),
                 InstanceState.fromInteger(r.getInt("state")),
                 resultSetToGame(r),
