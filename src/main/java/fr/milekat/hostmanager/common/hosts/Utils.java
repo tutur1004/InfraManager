@@ -27,10 +27,15 @@ public class Utils {
         envVars.put("STARTUP", Main.getConfig().getString("host.settings.command"));
         envVars.put("MIN_MEMORY", instance.getGame().getRequirements() + "M");
         envVars.put("MAX_MEMORY", instance.getGame().getRequirements() + "M");
+        envVars.put("INSTANCE_ID", instance.getId().toString());
+        envVars.put("SERVER_ID", instance.getServerId());
+        envVars.put("SERVER_NAME", instance.getName());
         envVars.put("PORT", String.valueOf(instance.getPort()));
         envVars.put("GAME", instance.getGame().getName());
         envVars.put("VERSION", instance.getGame().getGameVersion());
-        envVars.put("CONFIGPARSER", instance.getGame().getConfigs().keySet()
+        Map<String, String> configs = instance.getGame().getConfigs();
+        configs.put("SERVER_NAME", instance.getName());
+        envVars.put("CONFIGPARSER", configs.keySet()
                 .stream()
                 .map(key -> key + "=" + instance.getGame().getConfigs().get(key))
                 .collect(Collectors.joining(";")));
