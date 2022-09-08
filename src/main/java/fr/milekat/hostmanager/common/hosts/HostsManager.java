@@ -22,9 +22,13 @@ public class HostsManager {
 
     public HostsManager(@NotNull Configs config) throws HostExecuteException {
         //  Load host provider
-        if (config.getString("host.settings.provider").equalsIgnoreCase("pterodactyl")) {
+        String hostProvider = config.getString("host.settings.provider");
+        if (Main.DEBUG) {
+            Main.getLogger().info("Loading storage type: " + hostProvider);
+        }
+        if (hostProvider.equalsIgnoreCase("pterodactyl")) {
             hostExecutor = new PterodactylAdapter();
-        } else if (config.getString("host.settings.provider").equalsIgnoreCase("docker")) {
+        } else if (hostProvider.equalsIgnoreCase("docker")) {
             hostExecutor = new DockerAdapter();
         } else {
             throw new HostExecuteException("Unsupported database type");
@@ -33,7 +37,7 @@ public class HostsManager {
             throw new HostExecuteException("Storages are not loaded properly");
         }
         if (Main.DEBUG) {
-            Main.getLogger().info("Host provider: " + config.getString("host.settings.provider") + " loaded !");
+            Main.getLogger().info("Host provider: " + hostProvider + " loaded !");
         }
         try {
             Main.getUtilsManager().getHostUtils().resetHostList();

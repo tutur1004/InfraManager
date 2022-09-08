@@ -15,8 +15,7 @@ public class StorageManager {
         if (Main.DEBUG) {
             Main.getLogger().info("Loading storage type: " + storageType);
         }
-        if (storageType.equalsIgnoreCase("mysql") ||
-                storageType.equalsIgnoreCase("mariadb")) {
+        if (storageType.equalsIgnoreCase("mysql") || storageType.equalsIgnoreCase("mariadb")) {
             executor = new MySQLAdapter(config);
         } else {
             throw new StorageLoaderException("Unsupported storage type");
