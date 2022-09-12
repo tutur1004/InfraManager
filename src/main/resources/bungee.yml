@@ -1,5 +1,5 @@
-name: HostManager
+name: InfraManager
 author: MileKat
-main: fr.milekat.hostmanager.bungeecord.Main
+main: fr.milekat.infra.manager.bungeecord.Main
 version: '1.0'
-description: "Management plugin of this host system"
+description: "Management plugin of infra system"
