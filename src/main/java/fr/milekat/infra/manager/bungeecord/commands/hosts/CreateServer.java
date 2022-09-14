@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class CreateServer extends Command implements TabExecutor {
     /**
-     * /host-admin-create <server name> <game name> [<user name>]
+     * /host-admin-create <game name> [<user name>]
      */
     public CreateServer() {
         super("host-admin-create", "host.admin.server.create");
@@ -25,8 +25,8 @@ public class CreateServer extends Command implements TabExecutor {
     @Override
     public void execute(CommandSender sender, String[] args) {
         try {
-            if (args.length==2) {
-                Game game = Main.getStorage().getGame(args[1]);
+            if (args.length==1) {
+                Game game = Main.getStorage().getGame(args[0]);
                 if (game==null || !game.isEnable()) {
                     sender.sendMessage(new TextComponent("§cThis game is invalid or disable."));
                     return;
@@ -39,22 +39,22 @@ public class CreateServer extends Command implements TabExecutor {
                 Main.getHosts().createHost(game, user);
                 Main.getLogger().info(sender.getName() + " has created a new host.");
                 sender.sendMessage(new TextComponent("§aServer created ! Wait 5s for the first start..."));
-            } else if (args.length==3) {
-                Game game = Main.getStorage().getGame(args[1]);
+            } else if (args.length==2) {
+                Game game = Main.getStorage().getGame(args[0]);
                 if (game==null || !game.isEnable()) {
                     sender.sendMessage(new TextComponent("§cThis game is invalid or disable."));
                     return;
                 }
-                User user = Main.getStorage().getUser(args[2]);
+                User user = Main.getStorage().getUser(args[1]);
                 if (user==null) {
                     sender.sendMessage(new TextComponent("§cUser not found."));
                     return;
                 }
                 Main.getHosts().createHost(game, user);
-                Main.getLogger().info(sender.getName() + " has created a new host for " + args[2]);
+                Main.getLogger().info(sender.getName() + " has created a new host for " + args[1]);
                 sender.sendMessage(new TextComponent("§aServer created ! Wait 5s for the first start..."));
             } else {
-                sender.sendMessage(new TextComponent("§c/host-admin-create <server name> <game name> [<user name>]"));
+                sender.sendMessage(new TextComponent("§c/host-admin-create <game name> [<user name>]"));
             }
         } catch (StorageExecuteException exception) {
             sender.sendMessage(new TextComponent("§cStorage exception, check console"));
@@ -71,9 +71,13 @@ public class CreateServer extends Command implements TabExecutor {
 
     @Override
     public Iterable<String> onTabComplete(CommandSender sender, String[] args) {
-        if (args.length>=2) {
+        if (args.length <= 1) {
             try {
-                return McTools.getTabArgs(args[1], Main.getStorage().getGamesCached().stream()
+                String arg = "";
+                if (args.length == 1) {
+                    arg = args[0];
+                }
+                return McTools.getTabArgs(arg, Main.getStorage().getGamesCached().stream()
                         .map(Game::getName).collect(Collectors.toList()));
             } catch (StorageExecuteException exception) {
                 sender.sendMessage(new TextComponent("§cStorage exception, check console"));

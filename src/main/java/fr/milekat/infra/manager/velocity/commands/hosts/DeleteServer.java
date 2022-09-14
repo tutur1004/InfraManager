@@ -7,18 +7,19 @@ import fr.milekat.infra.manager.common.Main;
 import fr.milekat.infra.manager.common.hosts.exeptions.HostExecuteException;
 import fr.milekat.infra.manager.common.storage.exeptions.StorageExecuteException;
 import net.kyori.adventure.text.Component;
+import org.jetbrains.annotations.NotNull;
 
 public class DeleteServer implements SimpleCommand {
     /**
      * /host-admin-delete <server name>
      */
     @Override
-    public boolean hasPermission(SimpleCommand.Invocation invocation) {
+    public boolean hasPermission(SimpleCommand.@NotNull Invocation invocation) {
         return invocation.source().hasPermission("host.admin.server.delete");
     }
 
     @Override
-    public void execute(Invocation invocation) {
+    public void execute(@NotNull Invocation invocation) {
         String[] args = invocation.arguments();
         if (invocation.source() instanceof Player) {
             Player sender = (Player) invocation.source();
