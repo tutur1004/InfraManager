@@ -7,25 +7,31 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * <p>Messages semantic:</p>
+ * <p>0. {@link Messaging#getServerIdentifier()}
+ * <br>1. {@link MessagingCase}
+ * <br>2.[...] Message arguments</p>
+ * */
 public interface Messaging {
     //  Global settings
+    String SEPARATOR = ".";
     String PROXY_PREFIX = "proxy";
     String LOBBY_PREFIX = "lobby";
     String HOST_PREFIX = "host";
 
     //  RabbitMQ settings
-    String RABBIT_SEPARATOR = ".";
     String RABBIT_PREFIX = Main.getConfig().getString("messaging.rabbit-mq.prefix");
     String RABBIT_EXCHANGE_TYPE = "x-rtopic";
-    String RABBIT_EXCHANGE = RABBIT_PREFIX + RABBIT_EXCHANGE_TYPE + RABBIT_SEPARATOR + "exchange";
-    String RABBIT_QUEUE = RABBIT_PREFIX + "queue" + RABBIT_SEPARATOR + getServerIdentifier();
+    String RABBIT_EXCHANGE = RABBIT_PREFIX + RABBIT_EXCHANGE_TYPE + SEPARATOR + "exchange";
+    String RABBIT_QUEUE = RABBIT_PREFIX + "queue" + SEPARATOR + getServerIdentifier();
     String RABBIT_ROUTING_KEY = RABBIT_PREFIX + getServerIdentifier();
 
     /**
      * Simple shortcut to get the server identifier
      */
     static @NotNull String getServerIdentifier() {
-        return PROXY_PREFIX;
+        return PROXY_PREFIX + SEPARATOR + Main.PORT;
     }
 
     /**

@@ -17,6 +17,7 @@ public class MainBungee extends Plugin {
     @Override
     @SuppressWarnings("all")
     public void onEnable() {
+        int port = 25565; // TODO: 14/09/2022 NO and NOOOO
         Logger logger = LoggerFactory.getLogger("InfraManager");
         File configFile = null;
         File targetConfigFile = new File(this.getDataFolder().getPath(), "config.yml");
@@ -40,7 +41,7 @@ public class MainBungee extends Plugin {
         if (configFile==null) {
             this.onDisable();
         } else {
-            new Main(logger, configFile, new BungeeUtilsManager(this));
+            new Main(port, logger, configFile, new BungeeUtilsManager(this));
             new BungeeCommands(this);
             getProxy().getPluginManager().registerListener(this, new PlayerJoin());
         }

@@ -28,6 +28,7 @@ import java.util.Objects;
         authors = {"MileKat"})
 public class MainVelocity {
     private final ProxyServer server;
+    private final int port;
     private final File configFile;
     private final Logger logger;
     @Inject
@@ -36,6 +37,7 @@ public class MainVelocity {
                         @NotNull Logger logger,
                         @DataDirectory final Path dataFolder) {
         this.server = server;
+        this.port = 25565; // TODO: 14/09/2022 NO and NOOOO
         this.logger = logger;
         File targetConfigFile = new File(dataFolder.toString(), "config.yml");
         if (!targetConfigFile.exists()) {
@@ -62,7 +64,7 @@ public class MainVelocity {
     @Subscribe
     @SuppressWarnings("all")
     public void onProxyInitialization(ProxyInitializeEvent event) {
-        new Main(logger, configFile, new VelocityUtilsManager(this, server));
+        new Main(port, logger, configFile, new VelocityUtilsManager(this, server));
         server.getEventManager().register(this, new PlayerJoin());
     }
 }

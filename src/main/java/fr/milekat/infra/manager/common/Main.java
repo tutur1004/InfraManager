@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class Main {
     public static final String HOST_UUID_ENV_VAR_NAME = "HOST_UUID";
     public static final String INSTANCE_PREFIX = "infra-";
+    public static int PORT = 25565;
 
     public static Boolean DEBUG = false;
     private static Configs config;
@@ -30,7 +31,8 @@ public class Main {
     private static HostsManager LOADED_HOSTS_MANAGER;
     private static UtilsManager utilsManagers;
 
-    public Main(Logger logger, File configFile, UtilsManager utilsManager) {
+    public Main(int port, Logger logger, File configFile, UtilsManager utilsManager) {
+        PORT = port;
         mainLogger = logger;
         utilsManagers = utilsManager;
         config = new Configs(configFile);

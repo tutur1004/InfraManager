@@ -53,17 +53,18 @@ public class SendRabbitMessage implements Messaging {
     /**
      * Send a message to the proxy server
      *
-     * @param p       source player
+     * @param ignored source player
      * @param target  Targeted channel (RoutingKey for RabbitMQ)
      * @param mCase   Type of message
      * @param message to send
      */
     @Override
-    public void sendMessage(UUID p, String target, MessagingCase mCase, List<String> message)
+    public void sendMessage(UUID ignored, String target, MessagingCase mCase, List<String> message)
             throws MessagingSendException {
         try (Connection connection = this.factory.newConnection();
              Channel channel = connection.createChannel()) {
             ArrayList<String> list = new ArrayList<>();
+            list.add(Messaging.getServerIdentifier());
             list.add(mCase.name());
             list.addAll(message);
             channel.basicPublish(Messaging.RABBIT_EXCHANGE, target, null,
