@@ -3,6 +3,9 @@ package fr.milekat.infra.manager.common;
 import fr.milekat.infra.manager.api.classes.Instance;
 import fr.milekat.infra.manager.common.hosts.HostsManager;
 import fr.milekat.infra.manager.common.hosts.exeptions.HostExecuteException;
+import fr.milekat.infra.manager.common.messaging.Messaging;
+import fr.milekat.infra.manager.common.messaging.MessagingManager;
+import fr.milekat.infra.manager.common.messaging.exeptions.MessagingLoaderException;
 import fr.milekat.infra.manager.common.storage.StorageExecutor;
 import fr.milekat.infra.manager.common.storage.StorageManager;
 import fr.milekat.infra.manager.common.storage.exeptions.StorageLoaderException;
@@ -17,13 +20,13 @@ import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static final String HOST_UUID_ENV_VAR_NAME = "HOST_UUID";
-    public static final String HOST_PROXY_SERVER_PREFIX = "host-";
-    public static final String MESSAGE_CHANNEL = "host:channel";
+    public static final String INSTANCE_PREFIX = "infra-";
 
     public static Boolean DEBUG = false;
     private static Configs config;
     private static Logger mainLogger;
     private static StorageManager LOADED_STORAGE;
+    private static MessagingManager LOADED_MESSAGING;
     private static HostsManager LOADED_HOSTS_MANAGER;
     private static UtilsManager utilsManagers;
 
@@ -41,6 +44,16 @@ public class Main {
             }
         } catch (StorageLoaderException exception) {
             getLogger().warn("Storage load failed, disabling plugin..");
+            if (DEBUG) {
+                exception.printStackTrace();
+            } else {
+                getLogger().warn("Error: " + exception.getLocalizedMessage());
+            }
+        }
+        try {
+            LOADED_MESSAGING = new MessagingManager(config);
+        } catch (MessagingLoaderException exception) {
+            getLogger().warn("Messaging load failed, disabling plugin..");
             if (DEBUG) {
                 exception.printStackTrace();
             } else {
@@ -76,6 +89,14 @@ public class Main {
      */
     public static StorageExecutor getStorage() {
         return LOADED_STORAGE.getStorageExecutor();
+    }
+
+    /**
+     * Get Messaging
+     * @return Messaging interface
+     */
+    public static Messaging getMessaging() {
+        return LOADED_MESSAGING.getMessaging();
     }
 
     /**

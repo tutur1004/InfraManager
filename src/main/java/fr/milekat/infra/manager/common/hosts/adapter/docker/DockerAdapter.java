@@ -15,7 +15,7 @@ import com.github.dockerjava.transport.DockerHttpClient;
 import fr.milekat.infra.manager.api.classes.Instance;
 import fr.milekat.infra.manager.common.Main;
 import fr.milekat.infra.manager.common.hosts.HostExecutor;
-import fr.milekat.infra.manager.common.hosts.Utils;
+import fr.milekat.infra.manager.common.hosts.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;

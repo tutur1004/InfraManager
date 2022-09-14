@@ -2,8 +2,8 @@ package fr.milekat.infra.manager.common.hosts.adapter.pterodactyl;
 
 import fr.milekat.infra.manager.api.classes.Instance;
 import fr.milekat.infra.manager.common.Main;
-import fr.milekat.infra.manager.common.hosts.Utils;
 import fr.milekat.infra.manager.common.hosts.exeptions.HostExecuteException;
+import fr.milekat.infra.manager.common.hosts.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;

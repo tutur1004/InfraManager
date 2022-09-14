@@ -41,6 +41,10 @@ public class Configs {
         }
     }
 
+    public @NotNull Integer getInt(String node) {
+        return Integer.valueOf(getString(node));
+    }
+
     public @NotNull Boolean getBoolean(String node) {
         return Objects.requireNonNull(getValue(node)).getBoolean();
     }

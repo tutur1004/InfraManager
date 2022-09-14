@@ -15,7 +15,7 @@ public interface UtilsManager {
 
     /**
      * Get ServerManager
-     * @return {@link HostUtils}
+     * @return {@link InfraUtils}
      */
-    HostUtils getHostUtils();
+    InfraUtils getInfraUtils();
 }

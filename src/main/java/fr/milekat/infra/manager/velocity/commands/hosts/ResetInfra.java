@@ -6,13 +6,13 @@ import fr.milekat.infra.manager.common.Main;
 import fr.milekat.infra.manager.common.storage.exeptions.StorageExecuteException;
 import net.kyori.adventure.text.Component;
 
-public class ResetHosts implements SimpleCommand {
+public class ResetInfra implements SimpleCommand {
     /**
      * /host-admin-delete <server name>
      */
     @Override
     public boolean hasPermission(Invocation invocation) {
-        return invocation.source().hasPermission("host.admin.reset");
+        return invocation.source().hasPermission("infra.admin.reset");
     }
 
     @Override
@@ -20,7 +20,7 @@ public class ResetHosts implements SimpleCommand {
         if (invocation.source() instanceof Player) {
             Player sender = (Player) invocation.source();
             try {
-                Main.getUtilsManager().getHostUtils().resetHostList();
+                Main.getUtilsManager().getInfraUtils().resetInfraServerList();
                 sender.sendMessage(Component.text("Server list reset !"));
             } catch (StorageExecuteException exception) {
                 sender.sendMessage(Component.text("§cStorage exception, check console"));

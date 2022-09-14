@@ -6,18 +6,18 @@ import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.plugin.Command;
 
-public class ResetHosts extends Command {
+public class ResetInfra extends Command {
     /**
      * /host-admin-delete <server name>
      */
-    public ResetHosts() {
-        super("host-reset", "host.admin.reset");
+    public ResetInfra() {
+        super("infra-reset", "infra.admin.reset");
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
         try {
-            Main.getUtilsManager().getHostUtils().resetHostList();
+            Main.getUtilsManager().getInfraUtils().resetInfraServerList();
             sender.sendMessage(new TextComponent("Server list reset !"));
         } catch (StorageExecuteException exception) {
             sender.sendMessage(new TextComponent("§cStorage exception, check console"));

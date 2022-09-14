@@ -5,19 +5,19 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
 import fr.milekat.infra.manager.api.classes.Instance;
 import fr.milekat.infra.manager.common.Main;
-import fr.milekat.infra.manager.common.hosts.Utils;
+import fr.milekat.infra.manager.common.hosts.utils.Utils;
 import fr.milekat.infra.manager.common.storage.exeptions.StorageExecuteException;
-import fr.milekat.infra.manager.common.utils.HostUtils;
+import fr.milekat.infra.manager.common.utils.InfraUtils;
 
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class VelocityHost implements HostUtils {
+public class VelocityInfra implements InfraUtils {
     private final ProxyServer server;
 
-    public VelocityHost(ProxyServer server) {
+    public VelocityInfra(ProxyServer server) {
         this.server = server;
     }
 
@@ -45,9 +45,9 @@ public class VelocityHost implements HostUtils {
     /**
      * Load all hosts in proxy server list
      */
-    @Override
-    public void resetHostList() throws StorageExecuteException {
-        removeServersPrefix(Main.HOST_PROXY_SERVER_PREFIX);
+    @Override // TODO: 14/09/2022 Be careful with lobby instances
+    public void resetInfraServerList() throws StorageExecuteException {
+        removeServersPrefix(Main.INSTANCE_PREFIX);
         for (Instance instance : Main.getStorage().getActiveInstances()) {
             addServer(instance.getName(), instance.getHostname(), instance.getPort());
         }

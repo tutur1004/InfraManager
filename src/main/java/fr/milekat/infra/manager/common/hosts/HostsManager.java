@@ -8,7 +8,8 @@ import fr.milekat.infra.manager.common.Main;
 import fr.milekat.infra.manager.common.hosts.adapter.docker.DockerAdapter;
 import fr.milekat.infra.manager.common.hosts.adapter.pterodactyl.PterodactylAdapter;
 import fr.milekat.infra.manager.common.hosts.exeptions.HostExecuteException;
-import fr.milekat.infra.manager.common.hosts.workers.HostGarbageCollector;
+import fr.milekat.infra.manager.common.hosts.utils.HostGarbageCollector;
+import fr.milekat.infra.manager.common.hosts.utils.Utils;
 import fr.milekat.infra.manager.common.storage.exeptions.StorageExecuteException;
 import fr.milekat.infra.manager.common.utils.CommonEvent;
 import fr.milekat.infra.manager.common.utils.Configs;
@@ -40,12 +41,10 @@ public class HostsManager {
             Main.getLogger().info("Host provider: " + hostProvider + " loaded !");
         }
         try {
-            Main.getUtilsManager().getHostUtils().resetHostList();
+            Main.getUtilsManager().getInfraUtils().resetInfraServerList();
         } catch (StorageExecuteException e) {
             Main.getLogger().warn("Couldn't load existing hosts to proxy");
         }
-        //  Init messaging feature
-        // TODO: 05/09/2022 Messaging feature
 
         //  Worker to remove "ghost"/"unused" hosts
         new HostGarbageCollector();
@@ -68,13 +67,13 @@ public class HostsManager {
         //  Add this new instance to storage
         instance = Main.getStorage().createInstance(instance);
         //  Update the name with SQL id and game name
-        instance.setName(Main.HOST_PROXY_SERVER_PREFIX + game.getName() + "-" + instance.getId());
+        instance.setName(Main.INSTANCE_PREFIX + "host-" + game.getName() + "-" + instance.getId());
         //  Create the server in the provider
         getHostExecutor().createServer(instance);
         //  Add this new instance to storage
         Main.getStorage().updateInstance(instance);
         //  Add this new instance to the proxy server list
-        Main.getUtilsManager().getHostUtils().addServer(instance.getName(), instance.getHostname(), instance.getPort());
+        Main.getUtilsManager().getInfraUtils().addServer(instance.getName(), instance.getHostname(), instance.getPort());
         //  Call the ServerCreatedEvent custom event !
         Main.callEvent(CommonEvent.EventName.ServerCreatedEvent, instance);
     }
@@ -98,8 +97,8 @@ public class HostsManager {
         CommonEvent deletionEvent = Main.callEvent(CommonEvent.EventName.ServerDeletionEvent, instance);
         if (deletionEvent.isCancelled()) return;
         //  Reconnect all players from the host to the lobby, and delete the host
-        Main.getUtilsManager().getHostUtils().reconnectAllPlayersToLobby(instance);
-        Main.getUtilsManager().getHostUtils().removeServer(instance.getName());
+        Main.getUtilsManager().getInfraUtils().reconnectAllPlayersToLobby(instance);
+        Main.getUtilsManager().getInfraUtils().removeServer(instance.getName());
         //  Delete the server from the provider
         getHostExecutor().deleteServer(instance);
         //  Update this instance in the storage

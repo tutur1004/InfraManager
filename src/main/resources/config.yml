@@ -4,9 +4,19 @@ debug: false
 storage:
   type: mysql
   mysql:
-    prefix: "host_"
+    prefix: "infra_"
     hostname: "localhost:3306"
     database: "minecraft"
+    username: "user"
+    password: "pass"
+# Messaging system
+messaging:
+  # Available types: (Only RabbitMQ is supported for now)
+  type: RabbitMQ
+  rabbit-mq:
+    prefix: "infra."
+    hostname: "localhost"
+    port: 5672
     username: "user"
     password: "pass"
 # Host system (Only pterodactyl and docker are supported for now)

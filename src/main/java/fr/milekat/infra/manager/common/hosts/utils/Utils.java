@@ -1,4 +1,4 @@
-package fr.milekat.infra.manager.common.hosts;
+package fr.milekat.infra.manager.common.hosts.utils;
 
 import fr.milekat.infra.manager.api.classes.Instance;
 import fr.milekat.infra.manager.common.Main;

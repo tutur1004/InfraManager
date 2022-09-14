@@ -1,7 +1,7 @@
 package fr.milekat.infra.manager.bungeecord.utils;
 
 import fr.milekat.infra.manager.common.utils.EventCaller;
-import fr.milekat.infra.manager.common.utils.HostUtils;
+import fr.milekat.infra.manager.common.utils.InfraUtils;
 import fr.milekat.infra.manager.common.utils.Scheduler;
 import fr.milekat.infra.manager.common.utils.UtilsManager;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -33,10 +33,10 @@ public class BungeeUtilsManager implements UtilsManager {
 
     /**
      * Get interface ServerManager Bungee
-     * @return {@link HostUtils}
+     * @return {@link InfraUtils}
      */
     @Override
-    public BungeeHost getHostUtils() {
-        return new BungeeHost();
+    public BungeeInfra getInfraUtils() {
+        return new BungeeInfra();
     }
 }

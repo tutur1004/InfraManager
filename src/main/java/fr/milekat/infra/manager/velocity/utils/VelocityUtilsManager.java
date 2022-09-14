@@ -2,7 +2,7 @@ package fr.milekat.infra.manager.velocity.utils;
 
 import com.velocitypowered.api.proxy.ProxyServer;
 import fr.milekat.infra.manager.common.utils.EventCaller;
-import fr.milekat.infra.manager.common.utils.HostUtils;
+import fr.milekat.infra.manager.common.utils.InfraUtils;
 import fr.milekat.infra.manager.common.utils.Scheduler;
 import fr.milekat.infra.manager.common.utils.UtilsManager;
 import fr.milekat.infra.manager.velocity.MainVelocity;
@@ -36,10 +36,10 @@ public class VelocityUtilsManager implements UtilsManager {
 
     /**
      * Get interface ServerManager Velocity
-     * @return {@link HostUtils}
+     * @return {@link InfraUtils}
      */
     @Override
-    public VelocityHost getHostUtils() {
-        return new VelocityHost(server);
+    public VelocityInfra getInfraUtils() {
+        return new VelocityInfra(server);
     }
 }
