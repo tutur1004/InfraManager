@@ -5,33 +5,29 @@ import fr.milekat.infra.manager.common.messaging.exeptions.MessagingSendExceptio
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * <p>Messages semantic:</p>
  * <p>0. {@link Messaging#getServerIdentifier()}
- * <br>1. {@link MessagingCase}
+ * <br>1. {@link MessageCase}
  * <br>2.[...] Message arguments</p>
  * */
 public interface Messaging {
     //  Global settings
     String SEPARATOR = ".";
-    String PROXY_PREFIX = "proxy";
-    String LOBBY_PREFIX = "lobby";
-    String HOST_PREFIX = "host";
+    String PREFIX = Main.getConfig().getString("messaging.prefix");
 
     //  RabbitMQ settings
-    String RABBIT_PREFIX = Main.getConfig().getString("messaging.rabbit-mq.prefix");
     String RABBIT_EXCHANGE_TYPE = "x-rtopic";
-    String RABBIT_EXCHANGE = RABBIT_PREFIX + RABBIT_EXCHANGE_TYPE + SEPARATOR + "exchange";
-    String RABBIT_QUEUE = RABBIT_PREFIX + "queue" + SEPARATOR + getServerIdentifier();
-    String RABBIT_ROUTING_KEY = RABBIT_PREFIX + getServerIdentifier();
+    String RABBIT_EXCHANGE = PREFIX + RABBIT_EXCHANGE_TYPE + SEPARATOR + "exchange";
+    String RABBIT_QUEUE = PREFIX + "queue" + SEPARATOR + getServerIdentifier();
+    String RABBIT_ROUTING_KEY = PREFIX + getServerIdentifier();
 
     /**
      * Simple shortcut to get the server identifier
      */
     static @NotNull String getServerIdentifier() {
-        return PROXY_PREFIX + SEPARATOR + Main.PORT;
+        return Main.PROXY_PREFIX + SEPARATOR + Main.PORT;
     }
 
     /**
@@ -42,14 +38,13 @@ public interface Messaging {
     boolean checkSending() throws MessagingSendException;
 
     /**
-     * Send a message to the proxy server
+     * Send a message through messaging provider
      *
-     * @param player  source player
-     * @param target  Targeted channel (MainChannel for PluginMessage, RoutingKey for RabbitMQ)
+     * @param target  Targeted channel
      * @param mCase   Type of message
      * @param message to send
      */
-    void sendMessage(UUID player, String target, MessagingCase mCase, List<String> message)
+    void sendMessage(String target, MessageCase mCase, List<String> message)
             throws MessagingSendException;
 
     /**

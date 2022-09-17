@@ -20,7 +20,7 @@ public class ResetInfra implements SimpleCommand {
         if (invocation.source() instanceof Player) {
             Player sender = (Player) invocation.source();
             try {
-                Main.getUtilsManager().getInfraUtils().resetInfraServerList();
+                Main.getUtils().getInfraUtils().resetInfraServerList();
                 sender.sendMessage(Component.text("Server list reset !"));
             } catch (StorageExecuteException exception) {
                 sender.sendMessage(Component.text("§cStorage exception, check console"));

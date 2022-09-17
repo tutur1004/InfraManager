@@ -1,5 +1,6 @@
 package fr.milekat.infra.manager.velocity.utils;
 
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerInfo;
@@ -8,10 +9,12 @@ import fr.milekat.infra.manager.common.Main;
 import fr.milekat.infra.manager.common.hosts.utils.Utils;
 import fr.milekat.infra.manager.common.storage.exeptions.StorageExecuteException;
 import fr.milekat.infra.manager.common.utils.InfraUtils;
+import net.kyori.adventure.text.Component;
 
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class VelocityInfra implements InfraUtils {
@@ -45,9 +48,10 @@ public class VelocityInfra implements InfraUtils {
     /**
      * Load all hosts in proxy server list
      */
-    @Override // TODO: 14/09/2022 Be careful with lobby instances
+    @Override
     public void resetInfraServerList() throws StorageExecuteException {
-        removeServersPrefix(Main.INSTANCE_PREFIX);
+        removeServersPrefix(Main.HOST_PREFIX);
+        // TODO: 17/09/2022 Check lobby removeServersPrefix(Main.LOBBY_PREFIX);
         for (Instance instance : Main.getStorage().getActiveInstances()) {
             addServer(instance.getName(), instance.getHostname(), instance.getPort());
         }
@@ -81,5 +85,34 @@ public class VelocityInfra implements InfraUtils {
                 .stream()
                 .filter(registeredServer -> registeredServer.getServerInfo().getName().startsWith(prefix))
                 .forEach(registeredServer -> server.unregisterServer(registeredServer.getServerInfo()));
+    }
+
+    @Override
+    public void sendPlayerMessage(UUID uuid, String message) {
+        server.getPlayer(uuid).ifPresent(player -> player.sendMessage(Component.text(message)));
+    }
+
+    @Override
+    public void sendPlayerToServer(UUID uuid, String serverName) {
+        server.getPlayer(uuid).ifPresent(player -> {
+            if (server.getServer(serverName).isPresent()) {
+                player.createConnectionRequest(server.getServer(serverName).get()).connect();
+            }
+        });
+    }
+
+    @Override
+    public boolean playerIsConnected(UUID uuid) {
+        return server.getPlayer(uuid).isPresent();
+    }
+
+    @Override
+    public boolean playerIsInLobby(UUID uuid) {
+        if (server.getPlayer(uuid).isPresent()) {
+            Player player = server.getPlayer(uuid).get();
+             if (player.getCurrentServer().isPresent()) {
+                 return player.getCurrentServer().get().getServerInfo().getName().startsWith(Main.LOBBY_PREFIX);
+             } else return false;
+        } else return false;
     }
 }

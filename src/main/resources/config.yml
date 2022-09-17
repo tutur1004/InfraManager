@@ -13,8 +13,8 @@ storage:
 messaging:
   # Available types: (Only RabbitMQ is supported for now)
   type: RabbitMQ
+  prefix: "infra."
   rabbit-mq:
-    prefix: "infra."
     hostname: "localhost"
     port: 5672
     username: "user"

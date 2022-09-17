@@ -4,20 +4,24 @@ import fr.milekat.infra.manager.bungeecord.commands.BungeeCommands;
 import fr.milekat.infra.manager.bungeecord.listeners.PlayerJoin;
 import fr.milekat.infra.manager.bungeecord.utils.BungeeUtilsManager;
 import fr.milekat.infra.manager.common.Main;
+import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.plugin.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.Objects;
 
 public class MainBungee extends Plugin {
     @Override
     @SuppressWarnings("all")
     public void onEnable() {
-        int port = 25565; // TODO: 14/09/2022 NO and NOOOO
+        int port = ((InetSocketAddress) ProxyServer.getInstance().getConfig()
+                .getListeners().iterator().next().getSocketAddress()).getPort();
         Logger logger = LoggerFactory.getLogger("InfraManager");
         File configFile = null;
         File targetConfigFile = new File(this.getDataFolder().getPath(), "config.yml");
@@ -28,7 +32,7 @@ public class MainBungee extends Plugin {
                 if (! directory.exists()){
                     directory.mkdir();
                 }
-                Files.copy(getClass().getResourceAsStream("/config.yml"),
+                Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("/config.yml")),
                         targetConfigFile.toPath(),
                         StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException exception) {

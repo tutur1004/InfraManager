@@ -17,7 +17,7 @@ public class ResetInfra extends Command {
     @Override
     public void execute(CommandSender sender, String[] args) {
         try {
-            Main.getUtilsManager().getInfraUtils().resetInfraServerList();
+            Main.getUtils().getInfraUtils().resetInfraServerList();
             sender.sendMessage(new TextComponent("Server list reset !"));
         } catch (StorageExecuteException exception) {
             sender.sendMessage(new TextComponent("§cStorage exception, check console"));

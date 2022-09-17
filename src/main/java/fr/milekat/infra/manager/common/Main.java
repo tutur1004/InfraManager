@@ -20,7 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 public class Main {
     public static final String HOST_UUID_ENV_VAR_NAME = "HOST_UUID";
-    public static final String INSTANCE_PREFIX = "infra-";
+    public static final String PROXY_PREFIX = "proxy";
+    public static final String LOBBY_PREFIX = "lobby";
+    public static final String HOST_PREFIX = "host";
     public static int PORT = 25565;
 
     public static Boolean DEBUG = false;
@@ -137,7 +139,7 @@ public class Main {
      * Get {@link UtilsManager} proxied
      * @return {@link UtilsManager}
      */
-    public static UtilsManager getUtilsManager() {
+    public static UtilsManager getUtils() {
         return utilsManagers;
     }
 }

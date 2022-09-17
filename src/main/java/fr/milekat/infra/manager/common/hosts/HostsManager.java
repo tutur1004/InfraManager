@@ -41,7 +41,7 @@ public class HostsManager {
             Main.getLogger().info("Host provider: " + hostProvider + " loaded !");
         }
         try {
-            Main.getUtilsManager().getInfraUtils().resetInfraServerList();
+            Main.getUtils().getInfraUtils().resetInfraServerList();
         } catch (StorageExecuteException e) {
             Main.getLogger().warn("Couldn't load existing hosts to proxy");
         }
@@ -67,13 +67,13 @@ public class HostsManager {
         //  Add this new instance to storage
         instance = Main.getStorage().createInstance(instance);
         //  Update the name with SQL id and game name
-        instance.setName(Main.INSTANCE_PREFIX + "host-" + game.getName() + "-" + instance.getId());
+        instance.setName(Main.HOST_PREFIX + "-" + game.getName() + "-" + instance.getId());
         //  Create the server in the provider
         getHostExecutor().createServer(instance);
         //  Add this new instance to storage
         Main.getStorage().updateInstance(instance);
         //  Add this new instance to the proxy server list
-        Main.getUtilsManager().getInfraUtils().addServer(instance.getName(), instance.getHostname(), instance.getPort());
+        Main.getUtils().getInfraUtils().addServer(instance.getName(), instance.getHostname(), instance.getPort());
         //  Call the ServerCreatedEvent custom event !
         Main.callEvent(CommonEvent.EventName.ServerCreatedEvent, instance);
     }
@@ -97,8 +97,8 @@ public class HostsManager {
         CommonEvent deletionEvent = Main.callEvent(CommonEvent.EventName.ServerDeletionEvent, instance);
         if (deletionEvent.isCancelled()) return;
         //  Reconnect all players from the host to the lobby, and delete the host
-        Main.getUtilsManager().getInfraUtils().reconnectAllPlayersToLobby(instance);
-        Main.getUtilsManager().getInfraUtils().removeServer(instance.getName());
+        Main.getUtils().getInfraUtils().reconnectAllPlayersToLobby(instance);
+        Main.getUtils().getInfraUtils().removeServer(instance.getName());
         //  Delete the server from the provider
         getHostExecutor().deleteServer(instance);
         //  Update this instance in the storage

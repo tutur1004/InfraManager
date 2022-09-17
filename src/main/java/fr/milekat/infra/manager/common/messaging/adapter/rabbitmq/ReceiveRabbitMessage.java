@@ -7,6 +7,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import fr.milekat.infra.manager.common.Main;
+import fr.milekat.infra.manager.common.messaging.MessageCase;
 import fr.milekat.infra.manager.common.messaging.Messaging;
 import fr.milekat.infra.manager.common.messaging.processing.MessageFromHost;
 import fr.milekat.infra.manager.common.messaging.processing.MessageFromLobby;
@@ -51,13 +52,19 @@ public class ReceiveRabbitMessage {
                             Main.getLogger().info(strRaw);
                         }
                         List<String> message = new Gson().fromJson(strRaw, new TypeToken<List<String>>(){}.getType());
-                        if (message.get(0).startsWith(Messaging.PROXY_PREFIX)) {
+                        if (message.size() < 2) {
+                            if (Main.DEBUG) {
+                                Main.getLogger().warn(MessageCase.class.getName()+" not found in message: "+message);
+                            }
+                            return;
+                        }
+                        if (message.get(0).startsWith(Messaging.PREFIX + Main.PROXY_PREFIX)) {
                             //  Message is sent from a proxy server
                             new MessageFromProxy(message);
-                        } else if (message.get(0).startsWith(Messaging.LOBBY_PREFIX)) {
+                        } else if (message.get(0).startsWith(Messaging.PREFIX + Main.LOBBY_PREFIX)) {
                             //  Message is sent from a lobby server
                             new MessageFromLobby(message);
-                        } else if (message.get(0).startsWith(Messaging.HOST_PREFIX)) {
+                        } else if (message.get(0).startsWith(Messaging.PREFIX + Main.HOST_PREFIX)) {
                             //  Message is sent from a host server
                             new MessageFromHost(message);
                         }

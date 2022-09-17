@@ -37,7 +37,7 @@ public class MainVelocity {
                         @NotNull Logger logger,
                         @DataDirectory final Path dataFolder) {
         this.server = server;
-        this.port = 25565; // TODO: 14/09/2022 NO and NOOOO
+        this.port = server.getBoundAddress().getPort();
         this.logger = logger;
         File targetConfigFile = new File(dataFolder.toString(), "config.yml");
         if (!targetConfigFile.exists()) {

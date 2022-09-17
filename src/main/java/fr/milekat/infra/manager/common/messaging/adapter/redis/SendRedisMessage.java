@@ -1,10 +1,9 @@
 package fr.milekat.infra.manager.common.messaging.adapter.redis;
 
+import fr.milekat.infra.manager.common.messaging.MessageCase;
 import fr.milekat.infra.manager.common.messaging.Messaging;
-import fr.milekat.infra.manager.common.messaging.MessagingCase;
 
 import java.util.List;
-import java.util.UUID;
 
 public class SendRedisMessage implements Messaging {
     @Override
@@ -18,13 +17,14 @@ public class SendRedisMessage implements Messaging {
     }
 
     /**
-     * Send a message to the proxy server
+     * Send a message via RedisPubSub
      *
-     * @param target
+     * @param target  Targeted channel
+     * @param mCase   Type of message
      * @param message to send
      */
     @Override
-    public void sendMessage(UUID player, String target, MessagingCase mCase, List<String> message) {
+    public void sendMessage(String target, MessageCase mCase, List<String> message) {
 
     }
 }

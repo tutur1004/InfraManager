@@ -5,8 +5,8 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import fr.milekat.infra.manager.common.Main;
+import fr.milekat.infra.manager.common.messaging.MessageCase;
 import fr.milekat.infra.manager.common.messaging.Messaging;
-import fr.milekat.infra.manager.common.messaging.MessagingCase;
 import fr.milekat.infra.manager.common.messaging.exeptions.MessagingLoaderException;
 import fr.milekat.infra.manager.common.messaging.exeptions.MessagingSendException;
 
@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 public class SendRabbitMessage implements Messaging {
@@ -51,15 +50,14 @@ public class SendRabbitMessage implements Messaging {
     }
 
     /**
-     * Send a message to the proxy server
+     * Send a message
      *
-     * @param ignored source player
-     * @param target  Targeted channel (RoutingKey for RabbitMQ)
+     * @param target  Targeted channel (RoutingKey)
      * @param mCase   Type of message
      * @param message to send
      */
     @Override
-    public void sendMessage(UUID ignored, String target, MessagingCase mCase, List<String> message)
+    public void sendMessage(String target, MessageCase mCase, List<String> message)
             throws MessagingSendException {
         try (Connection connection = this.factory.newConnection();
              Channel channel = connection.createChannel()) {
