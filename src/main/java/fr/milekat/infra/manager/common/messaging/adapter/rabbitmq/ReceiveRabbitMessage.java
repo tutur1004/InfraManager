@@ -54,7 +54,8 @@ public class ReceiveRabbitMessage {
                         List<String> message = new Gson().fromJson(strRaw, new TypeToken<List<String>>(){}.getType());
                         if (message.size() < 2) {
                             if (Main.DEBUG) {
-                                Main.getLogger().warn(MessageCase.class.getName()+" not found in message: "+message);
+                                Main.getLogger().warn(MessageCase.class.getName() +
+                                        " not found in message: " + message);
                             }
                             return;
                         }
