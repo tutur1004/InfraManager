@@ -25,8 +25,8 @@ public class CreateServer extends Command implements TabExecutor {
     @Override
     public void execute(CommandSender sender, String[] args) {
         try {
-            if (args.length==1) {
-                Game game = Main.getStorage().getGame(args[0]);
+            if (args.length==2) {
+                Game game = Main.getStorage().getGame(args[0], args[1]);
                 if (game==null || !game.isEnable()) {
                     sender.sendMessage(new TextComponent("§cThis game is invalid or disable."));
                     return;
@@ -39,13 +39,13 @@ public class CreateServer extends Command implements TabExecutor {
                 Main.getHosts().createHost(game, user);
                 Main.getLogger().info(sender.getName() + " has created a new host.");
                 sender.sendMessage(new TextComponent("§aServer created ! Wait 5s for the first start..."));
-            } else if (args.length==2) {
-                Game game = Main.getStorage().getGame(args[0]);
+            } else if (args.length==3) {
+                Game game = Main.getStorage().getGame(args[0], args[1]);
                 if (game==null || !game.isEnable()) {
                     sender.sendMessage(new TextComponent("§cThis game is invalid or disable."));
                     return;
                 }
-                User user = Main.getStorage().getUser(args[1]);
+                User user = Main.getStorage().getUser(args[2]);
                 if (user==null) {
                     sender.sendMessage(new TextComponent("§cUser not found."));
                     return;

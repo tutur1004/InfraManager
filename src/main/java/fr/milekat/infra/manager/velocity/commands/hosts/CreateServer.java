@@ -31,8 +31,8 @@ public class CreateServer implements SimpleCommand {
         if (invocation.source() instanceof Player) {
             Player sender = (Player) invocation.source();
             try {
-                if (args.length==1) {
-                    Game game = Main.getStorage().getGame(args[0]);
+                if (args.length==2) {
+                    Game game = Main.getStorage().getGame(args[0], args[1]);
                     if (game==null || !game.isEnable()) {
                         sender.sendMessage(Component.text("§cThis game is invalid or disable."));
                         return;
@@ -45,13 +45,13 @@ public class CreateServer implements SimpleCommand {
                     Main.getHosts().createHost(game, user);
                     Main.getLogger().info(sender.getUsername() + " has created a new host.");
                     sender.sendMessage(Component.text("§aServer created ! Wait 5s for the first start..."));
-                } else if (args.length==2) {
-                    Game game = Main.getStorage().getGame(args[0]);
+                } else if (args.length==3) {
+                    Game game = Main.getStorage().getGame(args[0], args[1]);
                     if (game==null || !game.isEnable()) {
                         sender.sendMessage(Component.text("§cThis game is invalid or disable."));
                         return;
                     }
-                    User user = Main.getStorage().getUser(args[1]);
+                    User user = Main.getStorage().getUser(args[2]);
                     if (user==null) {
                         sender.sendMessage(Component.text("§cUser not found."));
                         return;
