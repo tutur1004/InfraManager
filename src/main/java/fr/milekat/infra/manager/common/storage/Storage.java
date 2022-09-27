@@ -1,29 +1,33 @@
 package fr.milekat.infra.manager.common.storage;
 
 import fr.milekat.infra.manager.common.Main;
-import fr.milekat.infra.manager.common.storage.adapter.mysql.MySQLAdapter;
+import fr.milekat.infra.manager.common.storage.adapter.sql.SQLStorage;
 import fr.milekat.infra.manager.common.storage.exeptions.StorageExecuteException;
 import fr.milekat.infra.manager.common.storage.exeptions.StorageLoaderException;
 import fr.milekat.infra.manager.common.utils.Configs;
 import org.jetbrains.annotations.NotNull;
 
-public class StorageManager {
-    private final StorageExecutor executor;
+public class Storage {
+    private final StorageImplementation executor;
 
-    public StorageManager(@NotNull Configs config) throws StorageLoaderException {
+    public Storage(@NotNull Configs config) throws StorageLoaderException {
         String storageType = config.getString("storage.type");
         if (Main.DEBUG) {
             Main.getLogger().info("Loading storage type: " + storageType);
         }
-        if (storageType.equalsIgnoreCase("mysql") || storageType.equalsIgnoreCase("mariadb")) {
-            executor = new MySQLAdapter(config);
-        } else {
-            throw new StorageLoaderException("Unsupported storage type");
+        switch (storageType.toLowerCase()) {
+            case "mysql":
+            case "mariadb":
+            case "postgres": {
+                executor = new SQLStorage(config);
+                break;
+            }
+            default: throw new StorageLoaderException("Unsupported storage type");
         }
         try {
             if (executor.checkStorages()) {
                 if (Main.DEBUG) {
-                    Main.getLogger().info("Storage loaded");
+                    Main.getLogger().info("Storage loaded with provider '" + executor.getImplementationName() + "'.");
                 }
             } else {
                 throw new StorageLoaderException("Storages are not loaded properly");
@@ -34,7 +38,7 @@ public class StorageManager {
 
     }
 
-    public StorageExecutor getStorageExecutor() {
+    public StorageImplementation getStorageImplementation() {
         return this.executor;
     }
 }

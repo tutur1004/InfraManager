@@ -6,8 +6,8 @@ import fr.milekat.infra.manager.common.hosts.exeptions.HostExecuteException;
 import fr.milekat.infra.manager.common.messaging.Messaging;
 import fr.milekat.infra.manager.common.messaging.MessagingManager;
 import fr.milekat.infra.manager.common.messaging.exeptions.MessagingLoaderException;
-import fr.milekat.infra.manager.common.storage.StorageExecutor;
-import fr.milekat.infra.manager.common.storage.StorageManager;
+import fr.milekat.infra.manager.common.storage.Storage;
+import fr.milekat.infra.manager.common.storage.StorageImplementation;
 import fr.milekat.infra.manager.common.storage.exeptions.StorageLoaderException;
 import fr.milekat.infra.manager.common.utils.CommonEvent;
 import fr.milekat.infra.manager.common.utils.Configs;
@@ -28,7 +28,7 @@ public class Main {
     public static Boolean DEBUG = false;
     private static Configs config;
     private static Logger mainLogger;
-    private static StorageManager LOADED_STORAGE;
+    private static Storage LOADED_STORAGE;
     private static MessagingManager LOADED_MESSAGING;
     private static HostsManager LOADED_HOSTS_MANAGER;
     private static UtilsManager utilsManagers;
@@ -42,7 +42,7 @@ public class Main {
         DEBUG = config.getBoolean("debug");
         if (DEBUG) getLogger().info("Debug enable");
         try {
-            LOADED_STORAGE = new StorageManager(config);
+            LOADED_STORAGE = new Storage(config);
             if (DEBUG) {
                 getLogger().info("Storage enable, API is now available");
             }
@@ -88,11 +88,11 @@ public class Main {
     }
 
     /**
-     * Get Storage Database Executor
+     * Get Storage
      * @return Storage executor
      */
-    public static StorageExecutor getStorage() {
-        return LOADED_STORAGE.getStorageExecutor();
+    public static StorageImplementation getStorage() {
+        return LOADED_STORAGE.getStorageImplementation();
     }
 
     /**
@@ -104,7 +104,7 @@ public class Main {
     }
 
     /**
-     * Get Storage Database Executor
+     * Get Host manager
      * @return Storage executor
      */
     public static HostsManager getHosts() {

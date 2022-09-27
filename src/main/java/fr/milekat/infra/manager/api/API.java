@@ -2,7 +2,7 @@ package fr.milekat.infra.manager.api;
 
 import fr.milekat.infra.manager.api.classes.User;
 import fr.milekat.infra.manager.common.Main;
-import fr.milekat.infra.manager.common.storage.StorageExecutor;
+import fr.milekat.infra.manager.common.storage.StorageImplementation;
 import fr.milekat.infra.manager.common.storage.exeptions.StorageExecuteException;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @SuppressWarnings("unused")
 public class API {
-    private static final StorageExecutor EXECUTOR = Main.getStorage();
+    private static final StorageImplementation EXECUTOR = Main.getStorage();
 
     /**
      * Get tickets amount of player

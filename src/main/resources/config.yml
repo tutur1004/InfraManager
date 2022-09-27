@@ -1,22 +1,34 @@
 # Debug mode
 debug: false
-# Storage system (Only mysql is supported for now)
+# Storage system
 storage:
+  #   Available storage type (Please fill related connection section)
+  #   (sql)  |=>  MySQL
+  #   (sql)  |=>  MariaDB (Recommended)
+  #   (sql)  |=>  PostgreSQL
   type: mysql
-  mysql:
-    prefix: "infra_"
-    hostname: "localhost:3306"
+  prefix: "infra_"
+  sql:
+    hostname: "localhost"
+    port: "3306"
     database: "minecraft"
     username: "user"
     password: "pass"
 # Messaging system
 messaging:
-  # Available types: (Only RabbitMQ is supported for now)
+  #   Available messaging type (Please fill related connection section)
+  #   |=> RabbitMQ
+  #   |=> Redis (WIP not available)
   type: RabbitMQ
   prefix: "infra."
   rabbit-mq:
     hostname: "localhost"
     port: 5672
+    username: "user"
+    password: "pass"
+  redis:
+    address: localhost
+    port: 6379
     username: "user"
     password: "pass"
 # Host system (Only pterodactyl and docker are supported for now)
