@@ -35,7 +35,7 @@ compileJava.options.encoding = 'UTF-8'
 
 dependencies {
     //  Annotation
-    annotationProcessor group: 'org.jetbrains', name: 'annotations', version: '23.0.0'
+    compileOnly group: 'org.jetbrains', name: 'annotations', version: '23.0.0'
     annotationProcessor group: 'com.velocitypowered', name: 'velocity-api', version: '3.0.1'
 
     //  Minecraft

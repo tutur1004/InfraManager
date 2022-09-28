@@ -89,7 +89,7 @@ public class Main {
 
     /**
      * Get Storage
-     * @return Storage executor
+     * @return Storage implementation
      */
     public static StorageImplementation getStorage() {
         return LOADED_STORAGE.getStorageImplementation();
@@ -105,7 +105,7 @@ public class Main {
 
     /**
      * Get Host manager
-     * @return Storage executor
+     * @return Host manager
      */
     public static HostsManager getHosts() {
         return LOADED_HOSTS_MANAGER;

@@ -32,7 +32,7 @@ public class Utils {
         envVars.put("SERVER_NAME", instance.getName());
         envVars.put("PORT", String.valueOf(instance.getPort()));
         envVars.put("GAME", instance.getGame().getName());
-        envVars.put("VERSION", instance.getGame().getGameVersion());
+        envVars.put("VERSION", instance.getGame().getVersion());
         Map<String, String> configs = instance.getGame().getConfigs();
         configs.put("SERVER_NAME", instance.getName());
         envVars.put("CONFIGPARSER", configs.keySet()

@@ -5,7 +5,7 @@ storage:
   #   Available storage type (Please fill related connection section)
   #   (sql)  |=>  MySQL
   #   (sql)  |=>  MariaDB (Recommended)
-  #   (sql)  |=>  PostgreSQL
+  #   (sql)  |=>  Postgres
   type: mysql
   prefix: "infra_"
   sql:
@@ -27,7 +27,7 @@ messaging:
     username: "user"
     password: "pass"
   redis:
-    address: localhost
+    hostname: localhost
     port: 6379
     username: "user"
     password: "pass"

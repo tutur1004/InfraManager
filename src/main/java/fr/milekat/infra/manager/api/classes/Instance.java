@@ -1,5 +1,7 @@
 package fr.milekat.infra.manager.api.classes;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Date;
 
 public class Instance {
@@ -26,7 +28,7 @@ public class Instance {
         this.user = null;
     }
 
-    public Instance(String name, Game game, User user) {
+    public Instance(String name, Game game, @NotNull User user) {
         this.id = null;
         this.name = name;
         this.description = "Server created by: " + user.getLastName();

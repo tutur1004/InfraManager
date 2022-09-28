@@ -83,7 +83,8 @@ public class HostsManager {
         try {
             if (Main.getStorage().getActiveInstances()
                     .stream()
-                    .noneMatch(o -> o.getServerId().equalsIgnoreCase(instance.getServerId()))
+                    .filter(activeInstance -> activeInstance.getServerId()!=null)
+                    .noneMatch(activeInstance -> activeInstance.getServerId().equalsIgnoreCase(instance.getServerId()))
             ) {
                 return;
             }
