@@ -27,9 +27,11 @@ public class Utils {
         envVars.put("STARTUP", Main.getConfig().getString("host.settings.command"));
         envVars.put("MIN_MEMORY", instance.getGame().getRequirements() + "M");
         envVars.put("MAX_MEMORY", instance.getGame().getRequirements() + "M");
+        envVars.put("SERVER_TYPE", "HOST");
         envVars.put("INSTANCE_ID", instance.getId().toString());
         envVars.put("SERVER_ID", instance.getServerId());
         envVars.put("SERVER_NAME", instance.getName());
+        envVars.put("IP", String.valueOf(instance.getHostname()));
         envVars.put("PORT", String.valueOf(instance.getPort()));
         envVars.put("GAME", instance.getGame().getName());
         envVars.put("VERSION", instance.getGame().getVersion());

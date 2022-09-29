@@ -328,7 +328,9 @@ public class SQLStorage implements StorageImplementation {
             q.setInt(1, id);
             q.execute();
             if (q.getResultSet().next()) {
-                return resultSetToGame(q.getResultSet());
+                Game game = resultSetToGame(q.getResultSet());
+                Storage.GAMES_CACHE.put(game, new Date());
+                return game;
             } else return null;
         } catch (SQLException exception) {
             throw new StorageExecuteException(exception, exception.getSQLState());
@@ -346,10 +348,49 @@ public class SQLStorage implements StorageImplementation {
             q.setString(2, version);
             q.execute();
             if (q.getResultSet().next()) {
-                return resultSetToGame(q.getResultSet());
+                Game game = resultSetToGame(q.getResultSet());
+                Storage.GAMES_CACHE.put(game, new Date());
+                return game;
             } else return null;
         } catch (SQLException exception) {
             throw new StorageExecuteException(exception, exception.getSQLState());
+        }
+    }
+
+    /**
+     * Get a games by id (But checking from game cache)
+     * @return game or null if not exist
+     */
+    @Override
+    public Game getGameCached(int id) throws StorageExecuteException {
+        Optional<Map.Entry<Game, Date>> optionalUser = Storage.GAMES_CACHE.entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().getId().equals(id))
+                .filter(entry -> entry.getValue().getTime() + Storage.GAMES_DELAY > new Date().getTime())
+                .findFirst();
+        if (optionalUser.isPresent()) {
+            return optionalUser.get().getKey();
+        } else  {
+            return getGame(id);
+        }
+    }
+
+    /**
+     * Get a games by name  and version (But checking from game cache)
+     * @return game or null if not exist
+     */
+    @Override
+    public Game getGameCached(String name, String version) throws StorageExecuteException {
+        Optional<Map.Entry<Game, Date>> optionalUser = Storage.GAMES_CACHE.entrySet()
+                .stream()
+                .filter(entry -> entry.getKey().getName().equalsIgnoreCase(name))
+                .filter(entry -> entry.getKey().getVersion().equalsIgnoreCase(version))
+                .filter(entry -> entry.getValue().getTime() + Storage.GAMES_DELAY > new Date().getTime())
+                .findFirst();
+        if (optionalUser.isPresent()) {
+            return optionalUser.get().getKey();
+        } else {
+            return getGame(name, version);
         }
     }
 
