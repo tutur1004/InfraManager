@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class HostsManager {
     private final HostExecutor hostExecutor;
@@ -100,17 +101,24 @@ public class HostsManager {
         //  Reconnect all players from the host to the lobby, and delete the host
         Main.getUtils().getInfraUtils().reconnectAllPlayersToLobby(instance);
         Main.getUtils().getInfraUtils().removeServer(instance.getName());
-        //  Delete the server from the provider
-        getHostExecutor().deleteServer(instance);
-        //  Update this instance in the storage
-        try {
-            instance.setState(InstanceState.TERMINATED);
-            instance.setDeletion(new Date());
-            Main.getStorage().updateInstance(instance);
-        } catch (StorageExecuteException exception) {
-            throw new HostExecuteException(exception, "Can't update storage after server deletion");
-        }
-        //  Call the ServerDeletedEvent custom event !
-        Main.callEvent(CommonEvent.EventName.ServerDeletedEvent, instance);
+
+        Main.getUtils().getScheduler().newSchedule(()-> {
+            try {
+                //  Delete the server from the provider
+                getHostExecutor().deleteServer(instance);
+            } catch (HostExecuteException exception) {
+                Main.getLogger().info("Can't delete server: " + instance.getName());
+            }
+            try {
+                //  Update this instance in the storage
+                instance.setState(InstanceState.TERMINATED);
+                instance.setDeletion(new Date());
+                Main.getStorage().updateInstance(instance);
+            } catch (StorageExecuteException exception) {
+                Main.getLogger().info("Can't update storage after server deletion");
+            }
+            //  Call the ServerDeletedEvent custom event !
+            Main.callEvent(CommonEvent.EventName.ServerDeletedEvent, instance);
+        }, 5, TimeUnit.SECONDS);
     }
 }

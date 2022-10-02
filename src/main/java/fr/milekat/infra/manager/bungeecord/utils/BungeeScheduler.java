@@ -19,12 +19,24 @@ public class BungeeScheduler implements Scheduler {
      * Schedule a new {@link Scheduled} Bungee task
      */
     @Override
+    public Task newSchedule(Runnable task, long delay, TimeUnit unit) {
+        return new Scheduled(plugin, task, delay, unit);
+    }
+
+    /**
+     * Schedule a new {@link Scheduled} Bungee task
+     */
+    @Override
     public Task newSchedule(Runnable task, long delay, long period, TimeUnit unit) {
         return new Scheduled(plugin, task, delay, period, unit);
     }
 
     static class Scheduled implements Task {
         private final ScheduledTask task;
+
+        public Scheduled(Plugin plugin, Runnable task, long delay, TimeUnit unit) {
+            this.task = ProxyServer.getInstance().getScheduler().schedule(plugin, task, delay, unit);
+        }
 
         public Scheduled(Plugin plugin, Runnable task, long delay, long period, TimeUnit unit) {
             this.task = ProxyServer.getInstance().getScheduler().schedule(plugin, task, delay, period, unit);

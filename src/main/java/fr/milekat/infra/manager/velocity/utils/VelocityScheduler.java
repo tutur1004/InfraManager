@@ -5,6 +5,7 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 import fr.milekat.infra.manager.common.utils.Scheduler;
 import fr.milekat.infra.manager.common.utils.Task;
 import fr.milekat.infra.manager.velocity.MainVelocity;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +22,14 @@ public class VelocityScheduler implements Scheduler {
      * Schedule a new {@link Scheduled} Velocity task
      */
     @Override
+    public Task newSchedule(Runnable task, long delay, TimeUnit unit) {
+        return new VelocityScheduler.Scheduled(plugin, server, task, delay, unit);
+    }
+
+    /**
+     * Schedule a new {@link Scheduled} Velocity task
+     */
+    @Override
     public Task newSchedule(Runnable task, long delay, long period, TimeUnit unit) {
         return new VelocityScheduler.Scheduled(plugin, server, task, delay, period, unit);
     }
@@ -28,7 +37,15 @@ public class VelocityScheduler implements Scheduler {
     static class Scheduled implements Task {
         private final ScheduledTask task;
 
-        public Scheduled(MainVelocity plugin, ProxyServer server, Runnable task, long delay, long period, TimeUnit unit) {
+        public Scheduled(MainVelocity plugin, @NotNull ProxyServer server, Runnable task, long delay, TimeUnit unit) {
+            this.task = server.getScheduler()
+                    .buildTask(plugin, task)
+                    .delay(delay, unit)
+                    .schedule();
+        }
+
+        public Scheduled(MainVelocity plugin, @NotNull ProxyServer server, Runnable task,
+                         long delay, long period, TimeUnit unit) {
             this.task = server.getScheduler()
                     .buildTask(plugin, task)
                     .delay(delay, unit)
